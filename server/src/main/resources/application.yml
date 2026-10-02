@@ -1,0 +1,40 @@
+cors:
+  originPatterns: http://localhost:3000,http://localhost:8080
+security:
+  jwt:
+    token:
+      secret-key: 53cr37
+      expire-length: 3600000
+spring:
+  application:
+    name: ReaderServer
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: jdbc:mysql://localhost:3306/readerserver?useTimezone=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: admin
+    password: admin
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+      show-sql: true
+      format_sql: true
+  flyway:
+    enabled: false
+server:
+  port: 8080
+springdoc:
+  pathsToMatch:
+    - /health/**
+    - /auth/**
+    - /api/**
+  swagger-ui:
+    use-root-path: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+logging:
+  file:
+    name: server.log

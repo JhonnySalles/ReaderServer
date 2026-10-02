@@ -1,0 +1,31 @@
+cors:
+  originPatterns: http://localhost:3000,http://localhost:8080
+security:
+  jwt:
+    token:
+      secret-key: 53cr37
+      expire-length: 3600000
+spring:
+  application:
+    name: ReaderServer
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+      show-sql: true
+      format_sql: true
+  flyway:
+    enabled: false
+server:
+  port: 8888
+springdoc:
+  pathsToMatch:
+    - /health/**
+    - /auth/**
+    - /api/**
+logging:
+  file:
+    name: server-test.log
