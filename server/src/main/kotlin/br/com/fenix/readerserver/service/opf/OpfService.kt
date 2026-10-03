@@ -16,9 +16,12 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+import br.com.fenix.readerserver.repository.data.DataFileRepository
+
 @Service
 class OpfService(
     private val opfRepository: OpfRepository,
+    private val dataFileRepository: DataFileRepository,
     private val modelMapper: ModelMapper
 ) : GenericJpaService<UUID?, Opf, OpfDto>(
     Opf.Companion,
@@ -52,5 +55,20 @@ class OpfService(
         val page: Page<Opf> = opfRepository.findBySeriesContaining(series, pageable)
         val dtoPage: Page<OpfDto> = page.map { mapper.parse(it, OpfDto::class.java) }
         return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchAdvanced(filter: br.com.fenix.readerserver.dto.opf.OpfSearchFilterDto, pageable: Pageable, assembler: PagedResourcesAssembler<OpfDto>): PagedModel<EntityModel<OpfDto>> {
+        val spec = br.com.fenix.readerserver.repository.opf.OpfSpecification.withFilters(filter)
+        val page: Page<Opf> = opfRepository.findAll(spec, pageable)
+        val dtoPage: Page<OpfDto> = page.map { mapper.parse(it, OpfDto::class.java) }
+        return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
+    fun findRawDataFiles(opfId: UUID): List<br.com.fenix.readerserver.dto.data.DataFileDto> {
+        return dataFileRepository.findByOpfId(opfId).map {
+            mapper.parse(it, br.com.fenix.readerserver.dto.data.DataFileDto::class.java)
+        }
     }
 }

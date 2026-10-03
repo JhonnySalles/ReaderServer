@@ -1,18 +1,41 @@
-import React from 'react';
-import { Tag, Bookmark, User, Globe, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Tag, Bookmark, User, Globe, Calendar, Download, Loader2 } from 'lucide-react';
 import type { ComicInfoItem } from '../../types/api';
+import { downloadFile } from '../../services/downloadService';
 import './Card.css';
 
 interface ComicInfoCardProps {
   comicInfo: ComicInfoItem;
+  onClick?: () => void;
 }
 
-export const ComicInfoCard: React.FC<ComicInfoCardProps> = ({ comicInfo }) => {
+export const ComicInfoCard: React.FC<ComicInfoCardProps> = ({ comicInfo, onClick }) => {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!comicInfo.id || downloading) return;
+    setDownloading(true);
+    const cleanName = (comicInfo.series || comicInfo.title || 'ComicInfo').replace(/[/\\?%*:|"<>]/g, '_');
+    await downloadFile(`/api/comicinfo/${comicInfo.id}/download`, `${cleanName}.xml`);
+    setDownloading(false);
+  };
+
   return (
-    <div className="media-card glass-panel comicinfo-card-border">
-      <div className="card-badge comicinfo-badge">
-        <Bookmark size={14} />
-        <span>COMICINFO</span>
+    <div className="media-card glass-panel comicinfo-card-border" onClick={onClick}>
+      <div className="card-top-actions">
+        <button
+          className="card-download-btn"
+          onClick={handleDownload}
+          title="Baixar ComicInfo.xml"
+          disabled={downloading}
+        >
+          {downloading ? <Loader2 size={14} className="spin-loader" /> : <Download size={14} />}
+        </button>
+        <div className="card-badge comicinfo-badge">
+          <Bookmark size={14} />
+          <span>COMICINFO</span>
+        </div>
       </div>
 
       <div className="card-body">

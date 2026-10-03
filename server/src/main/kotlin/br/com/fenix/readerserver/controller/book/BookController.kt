@@ -101,4 +101,86 @@ class BookController(
         val pageable = PageRequest.of(page, size, Sort.by(sort, "id"))
         return ResponseEntity.ok(bookService.findByOpfIdPaged(opfId, pageable, assembler))
     }
+
+    @Operation(summary = "Busca Avançada de Livros (GET)", description = "Busca paginada com parâmetros na query.")
+    @GetMapping(
+        value = ["/search/advanced"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedGet(
+        @ModelAttribute filter: br.com.fenix.readerserver.dto.book.BookSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<BookDto>
+    ): ResponseEntity<PagedModel<EntityModel<BookDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "nome"))
+        return ResponseEntity.ok(bookService.searchAdvanced(filter, pageable, assembler))
+    }
+
+    @Operation(summary = "Busca Avançada de Livros (POST)", description = "Busca paginada com múltiplos filtros no body.")
+    @PostMapping(
+        value = ["/search/advanced"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedPost(
+        @RequestBody filter: br.com.fenix.readerserver.dto.book.BookSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<BookDto>
+    ): ResponseEntity<PagedModel<EntityModel<BookDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "nome"))
+        return ResponseEntity.ok(bookService.searchAdvanced(filter, pageable, assembler))
+    }
+
+    @Operation(summary = "Download Conteúdo Vinculado do Livro (OPF XML)", description = "Faz o download do OPF associado ao livro.")
+    @GetMapping(
+        value = ["/{id}/download"],
+        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+    )
+    fun downloadLinkedContent(@PathVariable("id") id: UUID): ResponseEntity<String> {
+        val bookDto = bookService.findById(id)
+        val opfId = bookDto.opfId
+            ?: return ResponseEntity.notFound().build()
+
+        val dataFiles = bookService.findRawDataFilesByOpf(opfId)
+        val content = if (dataFiles.isNotEmpty() && !dataFiles[0].fileContent.isNullOrBlank()) {
+            dataFiles[0].fileContent!!
+        } else {
+            val opf = bookDto.opf
+            val title = opf?.title ?: bookDto.nome ?: ""
+            """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>$title</dc:title>
+    <dc:creator>${opf?.creator ?: ""}</dc:creator>
+    <dc:publisher>${opf?.publisher ?: ""}</dc:publisher>
+    <dc:language>${opf?.language ?: "pt"}</dc:language>
+    <dc:date>${opf?.datePublished ?: ""}</dc:date>
+    <dc:description>${opf?.description ?: ""}</dc:description>
+    <dc:subject>${opf?.subjects ?: ""}</dc:subject>
+  </metadata>
+</package>"""
+        }
+        val cleanName = (bookDto.nome ?: bookDto.fileName ?: "content")
+            .replace("[^a-zA-Z0-9\\-_\\.]".toRegex(), "_")
+        val filename = if (cleanName.lowercase().endsWith(".opf")) cleanName else "$cleanName.opf"
+
+        return ResponseEntity.ok()
+            .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+            .contentType(MediaType.APPLICATION_XML)
+            .body(content)
+    }
 }

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.util.*
@@ -83,8 +85,11 @@ class JwtTokenProvider {
 
     fun getAuthentication(token: String): Authentication {
         val decodedJWT: DecodedJWT = decodedToken(token)
-        val userDetails = service.loadUserByUsername(decodedJWT.subject)
-        return UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
+        val username = decodedJWT.subject
+        val roles: List<String> = decodedJWT.getClaim("roles").asList(String::class.java) ?: emptyList()
+        val authorities = roles.map { SimpleGrantedAuthority(it) }
+        val principal = User(username, "", authorities)
+        return UsernamePasswordAuthenticationToken(principal, "", authorities)
     }
 
     private fun decodedToken(token: String): DecodedJWT {

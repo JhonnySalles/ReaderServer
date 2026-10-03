@@ -42,6 +42,14 @@ data class Book(
     @field:XmlElement(name = "fileDate")
     var fileDate: LocalDateTime? = null,
 
+    @Column(name = "volume", nullable = true)
+    @field:XmlElement(name = "volume")
+    var volume: Float? = null,
+
+    @Column(name = "serie", length = 255, nullable = true)
+    @field:XmlElement(name = "serie")
+    var serie: String? = null,
+
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "opf_id", length = 36, nullable = true)
     @field:XmlElement(name = "opfId")
@@ -59,6 +67,8 @@ data class Book(
             fileName = null,
             extension = null,
             fileDate = null,
+            volume = null,
+            serie = null,
             opfId = null,
             opf = null
         )
@@ -76,6 +86,8 @@ data class Book(
         this.fileName = source.fileName
         this.extension = source.extension
         this.fileDate = source.fileDate
+        this.volume = source.volume
+        this.serie = source.serie
         this.opfId = source.opfId
     }
 
@@ -88,6 +100,10 @@ data class Book(
             this.extension = source.extension
         if (source.fileDate != null)
             this.fileDate = source.fileDate
+        if (source.volume != null)
+            this.volume = source.volume
+        if (source.serie != null)
+            this.serie = source.serie
         if (source.opfId != null)
             this.opfId = source.opfId
     }

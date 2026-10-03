@@ -65,4 +65,81 @@ class ComicInfoController(
         val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
         return ResponseEntity.ok(comicInfoService.findByTitle(title, pageable, assembler))
     }
+
+    @Operation(summary = "Busca Avançada de ComicInfo (GET)", description = "Busca paginada com parâmetros na query.")
+    @GetMapping(
+        value = ["/search/advanced"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedGet(
+        @ModelAttribute filter: br.com.fenix.readerserver.dto.comicinfo.ComicInfoSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<ComicInfoDto>
+    ): ResponseEntity<PagedModel<EntityModel<ComicInfoDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        return ResponseEntity.ok(comicInfoService.searchAdvanced(filter, pageable, assembler))
+    }
+
+    @Operation(summary = "Busca Avançada de ComicInfo (POST)", description = "Busca paginada com múltiplos filtros no body.")
+    @PostMapping(
+        value = ["/search/advanced"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedPost(
+        @RequestBody filter: br.com.fenix.readerserver.dto.comicinfo.ComicInfoSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<ComicInfoDto>
+    ): ResponseEntity<PagedModel<EntityModel<ComicInfoDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        return ResponseEntity.ok(comicInfoService.searchAdvanced(filter, pageable, assembler))
+    }
+    @GetMapping(
+        value = ["/{id}/download"],
+        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+    )
+    fun downloadXml(@PathVariable("id") id: UUID): ResponseEntity<String> {
+        val dto = comicInfoService.findById(id)
+        val dataFiles = comicInfoService.findRawDataFiles(id)
+        val content = if (dataFiles.isNotEmpty() && !dataFiles[0].fileContent.isNullOrBlank()) {
+            dataFiles[0].fileContent!!
+        } else {
+            // Se não houver arquivo bruto persistido, gera o XML básico
+            val title = dto.title.ifEmpty { dto.series }
+            """<?xml version="1.0" encoding="utf-8"?>
+<ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Title>${dto.title}</Title>
+  <Series>${dto.series}</Series>
+  <Number>${dto.number}</Number>
+  <Volume>${dto.volume}</Volume>
+  <Writer>${dto.writer ?: ""}</Writer>
+  <Publisher>${dto.publisher ?: ""}</Publisher>
+  <Genre>${dto.genre ?: ""}</Genre>
+  <LanguageISO>${dto.languageISO}</LanguageISO>
+  <Summary>${dto.summary ?: ""}</Summary>
+</ComicInfo>"""
+        }
+        val cleanName = (dto.series.ifEmpty { dto.title }.ifEmpty { "ComicInfo" })
+            .replace("[^a-zA-Z0-9\\-_\\.]".toRegex(), "_")
+        val filename = if (cleanName.lowercase().endsWith(".xml")) cleanName else "$cleanName.xml"
+
+        return ResponseEntity.ok()
+            .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+            .contentType(MediaType.APPLICATION_XML)
+            .body(content)
+    }
 }

@@ -22,9 +22,15 @@
         <modelMapper.version>3.1.1</modelMapper.version>
         <java-jwt.version>3.18.3</java-jwt.version>
         <test.containers.version>1.16.3</test.containers.version>
+        <javax.jmdns.version>3.6.2</javax.jmdns.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jmdns</groupId>
+            <artifactId>jmdns</artifactId>
+            <version>${javax.jmdns.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
 import { Home } from './pages/Home/Home';
 import { Books } from './pages/Books/Books';
@@ -13,6 +13,7 @@ export function App() {
           <Route path="books" element={<Books />} />
           <Route path="mangas" element={<Mangas />} />
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

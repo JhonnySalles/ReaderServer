@@ -42,6 +42,14 @@ data class Manga(
     @field:XmlElement(name = "fileDate")
     var fileDate: LocalDateTime? = null,
 
+    @Column(name = "volume", nullable = true)
+    @field:XmlElement(name = "volume")
+    var volume: Float? = null,
+
+    @Column(name = "serie", length = 255, nullable = true)
+    @field:XmlElement(name = "serie")
+    var serie: String? = null,
+
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "comicinfo_id", length = 36, nullable = true)
     @field:XmlElement(name = "comicInfoId")
@@ -59,6 +67,8 @@ data class Manga(
             fileName = null,
             extension = null,
             fileDate = null,
+            volume = null,
+            serie = null,
             comicInfoId = null,
             comicInfo = null
         )
@@ -76,6 +86,8 @@ data class Manga(
         this.fileName = source.fileName
         this.extension = source.extension
         this.fileDate = source.fileDate
+        this.volume = source.volume
+        this.serie = source.serie
         this.comicInfoId = source.comicInfoId
     }
 
@@ -88,6 +100,10 @@ data class Manga(
             this.extension = source.extension
         if (source.fileDate != null)
             this.fileDate = source.fileDate
+        if (source.volume != null)
+            this.volume = source.volume
+        if (source.serie != null)
+            this.serie = source.serie
         if (source.comicInfoId != null)
             this.comicInfoId = source.comicInfoId
     }

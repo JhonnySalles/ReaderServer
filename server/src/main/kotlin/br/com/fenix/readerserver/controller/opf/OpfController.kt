@@ -86,4 +86,81 @@ class OpfController(
         val pageable = PageRequest.of(page, size, Sort.by(sort, "series"))
         return ResponseEntity.ok(opfService.findBySeries(series, pageable, assembler))
     }
+
+    @Operation(summary = "Busca Avançada de OPF (GET)", description = "Busca paginada com parâmetros na query.")
+    @GetMapping(
+        value = ["/search/advanced"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedGet(
+        @ModelAttribute filter: br.com.fenix.readerserver.dto.opf.OpfSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<OpfDto>
+    ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        return ResponseEntity.ok(opfService.searchAdvanced(filter, pageable, assembler))
+    }
+
+    @Operation(summary = "Busca Avançada de OPF (POST)", description = "Busca paginada com múltiplos filtros no body.")
+    @PostMapping(
+        value = ["/search/advanced"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun searchAdvancedPost(
+        @RequestBody filter: br.com.fenix.readerserver.dto.opf.OpfSearchFilterDto,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        assembler: PagedResourcesAssembler<OpfDto>
+    ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        return ResponseEntity.ok(opfService.searchAdvanced(filter, pageable, assembler))
+    }
+
+    @Operation(summary = "Download OPF XML", description = "Faz o download do arquivo .opf.")
+    @GetMapping(
+        value = ["/{id}/download"],
+        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+    )
+    fun downloadXml(@PathVariable("id") id: UUID): ResponseEntity<String> {
+        val dto = opfService.findById(id)
+        val dataFiles = opfService.findRawDataFiles(id)
+        val content = if (dataFiles.isNotEmpty() && !dataFiles[0].fileContent.isNullOrBlank()) {
+            dataFiles[0].fileContent!!
+        } else {
+            """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>${dto.title}</dc:title>
+    <dc:creator>${dto.creator ?: ""}</dc:creator>
+    <dc:publisher>${dto.publisher ?: ""}</dc:publisher>
+    <dc:language>${dto.language}</dc:language>
+    <dc:date>${dto.datePublished ?: ""}</dc:date>
+    <dc:description>${dto.description ?: ""}</dc:description>
+    <dc:subject>${dto.subjects ?: ""}</dc:subject>
+  </metadata>
+</package>"""
+        }
+        val cleanName = (dto.title.ifEmpty { "content" })
+            .replace("[^a-zA-Z0-9\\-_\\.]".toRegex(), "_")
+        val filename = if (cleanName.lowercase().endsWith(".opf")) cleanName else "$cleanName.opf"
+
+        return ResponseEntity.ok()
+            .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+            .contentType(MediaType.APPLICATION_XML)
+            .body(content)
+    }
 }

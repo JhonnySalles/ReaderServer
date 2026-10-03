@@ -1,18 +1,41 @@
-import React from 'react';
-import { Tag, Book, User, Globe, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Tag, Book, User, Globe, Calendar, Download, Loader2 } from 'lucide-react';
 import type { OpfItem } from '../../types/api';
+import { downloadFile } from '../../services/downloadService';
 import './Card.css';
 
 interface OpfCardProps {
   opf: OpfItem;
+  onClick?: () => void;
 }
 
-export const OpfCard: React.FC<OpfCardProps> = ({ opf }) => {
+export const OpfCard: React.FC<OpfCardProps> = ({ opf, onClick }) => {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!opf.id || downloading) return;
+    setDownloading(true);
+    const cleanName = (opf.title || 'content').replace(/[/\\?%*:|"<>]/g, '_');
+    await downloadFile(`/api/opf/${opf.id}/download`, `${cleanName}.opf`);
+    setDownloading(false);
+  };
+
   return (
-    <div className="media-card glass-panel opf-card-border">
-      <div className="card-badge opf-badge">
-        <Book size={14} />
-        <span>OPF METADATA</span>
+    <div className="media-card glass-panel opf-card-border" onClick={onClick}>
+      <div className="card-top-actions">
+        <button
+          className="card-download-btn"
+          onClick={handleDownload}
+          title="Baixar arquivo .opf"
+          disabled={downloading}
+        >
+          {downloading ? <Loader2 size={14} className="spin-loader" /> : <Download size={14} />}
+        </button>
+        <div className="card-badge opf-badge">
+          <Book size={14} />
+          <span>OPF METADATA</span>
+        </div>
       </div>
 
       <div className="card-body">

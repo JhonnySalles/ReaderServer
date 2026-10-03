@@ -25,6 +25,12 @@ data class MangaDto(
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     var fileDate: LocalDateTime? = null,
 
+    @JsonView(Views.Summary::class)
+    var volume: Float? = null,
+
+    @JsonView(Views.Summary::class)
+    var serie: String? = null,
+
     @JsonView(Views.Detail::class)
     var comicInfoId: UUID? = null,
 

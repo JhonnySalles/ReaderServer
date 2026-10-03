@@ -9,8 +9,10 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+
 @Repository
-interface OpfRepository : JpaRepository<Opf, UUID> {
+interface OpfRepository : JpaRepository<Opf, UUID>, JpaSpecificationExecutor<Opf> {
 
     @Query("SELECT o FROM Opf o WHERE o.title LIKE CONCAT('%', :title, '%')")
     fun findByTitleContaining(@Param("title") title: String, pageable: Pageable): Page<Opf>

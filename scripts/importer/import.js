@@ -18,6 +18,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8083/api';
+const API_USERNAME = process.env.API_USERNAME || 'admin';
+const API_PASSWORD = process.env.API_PASSWORD || 'admin';
+const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
@@ -415,11 +418,35 @@ async function main() {
   console.log(chalk.bold.cyan(`           API Base: ${API_BASE_URL}                  `));
   console.log(chalk.bold.cyan('======================================================\n'));
 
-  // Testar conexão com a API
+  // Testar conexão com a API via Health Check
   try {
-    await axios.get(`${API_BASE_URL}/manga?size=1`, { timeout: 3000 });
+    const healthRes = await axios.get(`${SERVER_URL}/health`, { timeout: 3000 });
+    if (healthRes.data.status === 'UP') {
+      console.log(chalk.green(`[OK] Conexão com o servidor validada com sucesso.`));
+    }
   } catch (err) {
-    console.log(chalk.yellow(`[AVISO] Não foi possível validar conexão imediata com ${API_BASE_URL}. O script tentará prosseguir.\n`));
+    console.log(chalk.yellow(`[AVISO] Não foi possível validar conexão imediata com ${SERVER_URL}/health. O script tentará prosseguir.\n`));
+  }
+
+  // Autenticação
+  try {
+    console.log(chalk.blue(`\n🔑 Autenticando com usuário '${API_USERNAME}'...`));
+    const authRes = await axios.post(`${SERVER_URL}/auth/signin`, {
+      username: API_USERNAME,
+      password: API_PASSWORD
+    }, { timeout: 5000 });
+
+    if (authRes.data && authRes.data.accessToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authRes.data.accessToken}`;
+      console.log(chalk.green(`[OK] Autenticado com sucesso.\n`));
+    } else {
+      console.log(chalk.red(`[ERRO] Falha ao autenticar: Token não retornado.`));
+      process.exit(1);
+    }
+  } catch (err) {
+    console.log(chalk.red(`[ERRO] Falha ao autenticar com o servidor. Verifique as credenciais no .env ou se a API está rodando.`));
+    console.log(chalk.red(err.message));
+    process.exit(1);
   }
 
   const answers = await inquirer.prompt([

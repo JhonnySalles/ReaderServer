@@ -9,8 +9,10 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+
 @Repository
-interface ComicInfoRepository : JpaRepository<ComicInfo, UUID> {
+interface ComicInfoRepository : JpaRepository<ComicInfo, UUID>, JpaSpecificationExecutor<ComicInfo> {
 
     @Query("SELECT c FROM ComicInfo c WHERE c.series LIKE CONCAT('%', :series, '%')")
     fun findBySeriesContaining(@Param("series") series: String, pageable: Pageable): Page<ComicInfo>

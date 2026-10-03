@@ -18,9 +18,12 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+import br.com.fenix.readerserver.repository.data.DataFileRepository
+
 @Service
 class MangaService(
     private val mangaRepository: MangaRepository,
+    private val dataFileRepository: DataFileRepository,
     private val modelMapper: ModelMapper
 ) : GenericJpaService<UUID?, Manga, MangaDto>(
     Manga.Companion,
@@ -70,5 +73,20 @@ class MangaService(
         val page: Page<Manga> = mangaRepository.findByComicInfoIdPaged(comicInfoId, pageable)
         val dtoPage: Page<MangaDto> = page.map { mapper.parse(it, MangaDto::class.java) }
         return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchAdvanced(filter: br.com.fenix.readerserver.dto.manga.MangaSearchFilterDto, pageable: Pageable, assembler: PagedResourcesAssembler<MangaDto>): PagedModel<EntityModel<MangaDto>> {
+        val spec = br.com.fenix.readerserver.repository.manga.MangaSpecification.withFilters(filter)
+        val page: Page<Manga> = mangaRepository.findAll(spec, pageable)
+        val dtoPage: Page<MangaDto> = page.map { mapper.parse(it, MangaDto::class.java) }
+        return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
+    fun findRawDataFilesByComicInfo(comicInfoId: UUID): List<br.com.fenix.readerserver.dto.data.DataFileDto> {
+        return dataFileRepository.findByComicInfoId(comicInfoId).map {
+            mapper.parse(it, br.com.fenix.readerserver.dto.data.DataFileDto::class.java)
+        }
     }
 }

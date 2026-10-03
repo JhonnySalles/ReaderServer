@@ -10,8 +10,10 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+
 @Repository
-interface MangaRepository : JpaRepository<Manga, UUID?> {
+interface MangaRepository : JpaRepository<Manga, UUID?>, JpaSpecificationExecutor<Manga> {
 
     @EntityGraph(attributePaths = ["comicInfo"])
     @Query("SELECT m FROM Manga m WHERE m.id = :id")

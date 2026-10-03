@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
 import type { PageableResponse } from '../types/api';
+import { parseSearchQuery } from '../services/parseSearchQuery';
 
 interface UseInfinitePaginationProps {
   endpoint: string;
@@ -33,21 +34,57 @@ export function useInfinitePagination<T>({
     setLoading(true);
     setError(null);
     try {
-      let url = '';
-      const params: Record<string, any> = {
+      const parsed = parseSearchQuery(searchQuery);
+      // Extrair todas as chaves exceto raw
+      const filterKeys = Object.keys(parsed).filter(k => k !== 'raw');
+
+      let response;
+      const baseParams: Record<string, any> = {
         page: pageToFetch,
         size: pageSize,
         direction: direction
       };
 
-      if (searchQuery.trim() !== '') {
-        url = searchEndpoint || `${endpoint}/search/${searchParamName}`;
-        params[searchParamName] = searchQuery.trim();
+      if (filterKeys.length === 0) {
+        // Nenhuma busca ou busca em branco -> raiz do endpoint
+        response = await api.get<PageableResponse<T>>(endpoint, { params: baseParams });
       } else {
-        url = `${endpoint}/page`;
+        const hasExtraTags = filterKeys.some(k => k !== 'query');
+
+        if (!hasExtraTags) {
+          // Apenas texto livre digitado sem comandos @
+          const freeText = parsed.query || searchQuery.trim();
+          const url = searchEndpoint || `${endpoint}/search/${searchParamName}`;
+          const params = {
+            ...baseParams,
+            [searchParamName]: freeText
+          };
+          response = await api.get<PageableResponse<T>>(url, { params });
+        } else {
+          // Possui comandos @ (filtros extras)
+          const filterPayload: Record<string, any> = {};
+          filterKeys.forEach(key => {
+            filterPayload[key] = parsed[key];
+          });
+
+          // Regra do plano: <= 1 filtro adicional -> GET /search/advanced com QueryParams
+          // > 1 filtro adicional -> POST /search/advanced com JSON body
+          const extraFilterCount = filterKeys.filter(k => k !== 'query').length;
+
+          if (extraFilterCount <= 1) {
+            const url = `${endpoint}/search/advanced`;
+            const params = {
+              ...baseParams,
+              ...filterPayload
+            };
+            response = await api.get<PageableResponse<T>>(url, { params });
+          } else {
+            const url = `${endpoint}/search/advanced`;
+            response = await api.post<PageableResponse<T>>(url, filterPayload, { params: baseParams });
+          }
+        }
       }
 
-      const response = await api.get<PageableResponse<T>>(url, { params });
       const data = response.data;
       const fetchedList: T[] = (data._embedded && data._embedded[listKey]) || [];
       const totalPages = data.page?.totalPages || 1;

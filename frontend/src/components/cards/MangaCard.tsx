@@ -1,22 +1,46 @@
-import React from 'react';
-import { Layers, Calendar, HardDrive, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { Layers, Calendar, HardDrive, Info, Download, Loader2 } from 'lucide-react';
 import type { MangaItem } from '../../types/api';
+import { downloadFile } from '../../services/downloadService';
 import './Card.css';
 
 interface MangaCardProps {
   manga: MangaItem;
+  onClick?: () => void;
 }
 
-export const MangaCard: React.FC<MangaCardProps> = ({ manga }) => {
+export const MangaCard: React.FC<MangaCardProps> = ({ manga, onClick }) => {
+  const [downloading, setDownloading] = useState(false);
   const formattedDate = manga.fileDate 
     ? new Date(manga.fileDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : 'Sem data';
 
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!manga.id || downloading) return;
+    setDownloading(true);
+    const cleanName = (manga.nome || manga.fileName || 'ComicInfo').replace(/[/\\?%*:|"<>]/g, '_');
+    await downloadFile(`/api/manga/${manga.id}/download`, `${cleanName}.xml`);
+    setDownloading(false);
+  };
+
   return (
-    <div className="media-card glass-panel manga-card-border">
-      <div className="card-badge manga-badge">
-        <Layers size={14} />
-        <span>{manga.extension ? manga.extension.toUpperCase() : 'MANGA'}</span>
+    <div className="media-card glass-panel manga-card-border" onClick={onClick}>
+      <div className="card-top-actions">
+        {manga.comicInfoId && (
+          <button
+            className="card-download-btn"
+            onClick={handleDownload}
+            title="Baixar ComicInfo vinculado (XML)"
+            disabled={downloading}
+          >
+            {downloading ? <Loader2 size={14} className="spin-loader" /> : <Download size={14} />}
+          </button>
+        )}
+        <div className="card-badge manga-badge">
+          <Layers size={14} />
+          <span>{manga.extension ? manga.extension.toUpperCase() : 'MANGA'}</span>
+        </div>
       </div>
 
       <div className="card-body">

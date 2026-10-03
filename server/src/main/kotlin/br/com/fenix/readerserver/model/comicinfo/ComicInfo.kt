@@ -20,11 +20,11 @@ data class ComicInfo(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "ID", nullable = false, unique = true, length = 36)
+    @Column(name = "id", nullable = false, unique = true, length = 36)
     @field:XmlElement(name = "id")
     private var id: UUID? = null,
     @XmlTransient
-    @Column(name = "idMal", nullable = true)
+    @Column(name = "id_mal", nullable = true)
     var idMal: Long? = null,
     @field:XmlElement(name = "comic")
     @Column(name = "comic", length = 250, nullable = true)
@@ -96,19 +96,19 @@ data class ComicInfo(
     @Transient
     @field:XmlElement(name = "Count")
     var count: Int? = null,
-    @Column(name = "alternativeSeries", length = 900, nullable = true)
+    @Column(name = "alternative_series", length = 900, nullable = true)
     @field:XmlElement(name = "AlternateSeries")
     var alternateSeries: String? = null,
     @Transient
     @field:XmlElement(name = "AlternateNumber")
     var alternateNumber: Float? = null,
-    @Column(name = "storyArc", length = 900, nullable = true)
+    @Column(name = "story_arc", length = 900, nullable = true)
     @field:XmlElement(name = "StoryArc")
     var storyArc: String? = null,
     @Transient
     @field:XmlElement(name = "StoryArcNumber")
     var storyArcNumber: String? = null,
-    @Column(name = "seriesGroup", length = 900, nullable = true)
+    @Column(name = "series_group", length = 900, nullable = true)
     @field:XmlElement(name = "SeriesGroup")
     var seriesGroup: String? = null,
     @Transient
@@ -130,7 +130,7 @@ data class ComicInfo(
     @field:XmlElement(name = "Format")
     var format: String? = null,
     @Enumerated(EnumType.STRING)
-    @Column(name = "maturityRating", length = 100, nullable = true)
+    @Column(name = "maturity_rating", length = 100, nullable = true)
     @field:XmlElement(name = "AgeRating")
     var ageRating: AgeRating? = null,
     @Transient
