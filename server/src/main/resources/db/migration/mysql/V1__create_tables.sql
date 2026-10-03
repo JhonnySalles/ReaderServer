@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS data (
     opf_id VARCHAR(36) DEFAULT NULL,
     tipo VARCHAR(50) DEFAULT NULL,
     file_name VARCHAR(255) DEFAULT NULL,
-    file_content TEXT DEFAULT NULL,
+    file_content LONGTEXT DEFAULT NULL,
     atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY ( id ),
     KEY idx_data_comicinfo ( comicinfo_id ),
@@ -129,4 +129,3 @@ INSERT INTO usuarios_permissoes (id_usuario, id_permissao) VALUES
 (1, 2),
 (1, 3)
 ON DUPLICATE KEY UPDATE id_usuario = id_usuario;
-

@@ -19,6 +19,7 @@ spring:
       format_sql: true
   flyway:
     enabled: false
+    locations: classpath:db/migration/{vendor}
 server:
   port: 8888
 springdoc:

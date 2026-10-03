@@ -1,0 +1,57 @@
+.tabs-container {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 6px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+  gap: 6px;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.tab-button:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-button.tab-active {
+  color: #fff;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Accent Colors for Tabs */
+.primary-accent .tab-button.tab-active {
+  border-color: var(--border-highlight);
+  color: #818cf8;
+}
+
+.manga-accent .tab-button.tab-active {
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+}
+
+.book-accent .tab-button.tab-active {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.tab-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+}
