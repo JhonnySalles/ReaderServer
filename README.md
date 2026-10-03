@@ -55,7 +55,19 @@ Endpoint para gerenciar os metadados de quadrinhos (ComicInfo). Como herda de `G
    mvn clean install
    mvn spring-boot:run
    ```
-4. A API estará rodando em `http://localhost:8080`.
+4. A API estará rodando em `http://localhost:8083` (ou porta configurada).
+
+### 📥 Importador de Mídias (CLI)
+Para importar mangas, quadrinhos e livros escaneando pastas e subpastas locais:
+1. Acesse o diretório `scripts/importer` e execute o arquivo `run.bat` (ou `import.bat`).
+2. Para extração de arquivos `.cbr` e `.rar`, certifique-se de ter o `rar.exe` no diretório `scripts/importer/` (ou `bin/` ou no `PATH` do sistema).
+3. Alternativamente, via terminal:
+   ```bash
+   cd scripts/importer
+   yarn start
+   ```
+4. Siga o assistente interativo selecionando o tipo de mídia (Mangá / Livro) e informando o caminho do diretório.
+
 
 ## 📦 Estrutura de Diretórios
 * `server/src/main/kotlin/.../readerserver/controller`: Controladores da API.
