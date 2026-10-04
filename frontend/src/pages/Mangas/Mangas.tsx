@@ -59,12 +59,19 @@ export const Mangas: React.FC = () => {
   };
 
   const mangaSuggestions = [
-    { command: 'volume', label: 'Volume', example: '@volume:1', description: 'Número do volume' },
-    { command: 'series', label: 'Série', example: '@series:Naruto', description: 'Nome da franquia/série' },
-    { command: 'author', label: 'Autor / Roteirista', example: '@author:Oda', description: 'Autor ou desenhista' },
-    { command: 'publisher', label: 'Editora', example: '@publisher:Panini', description: 'Editora de publicação' },
-    { command: 'genre', label: 'Gênero', example: '@genre:Ação', description: 'Gênero da obra' },
-    { command: 'type', label: 'Formato / Extensão', example: '@type:cbz', description: 'Extensão do arquivo' }
+    { command: 'volume', label: 'Volume / Edição', example: '@volume:1', description: 'Número ou volume' },
+    { command: 'serie', label: 'Série', example: '@serie:Naruto', description: 'Nome da franquia/série' },
+    { command: 'autor', label: 'Autor / Criador', example: '@autor:Kishimoto', description: 'Autor ou criador da obra' },
+    { command: 'roteirista', label: 'Roteirista', example: '@roteirista:Oda', description: 'Roteirista da história' },
+    { command: 'ilustrador', label: 'Ilustrador', example: '@ilustrador:Murata', description: 'Desenhista / Ilustrador' },
+    { command: 'editora', label: 'Editora', example: '@editora:Panini', description: 'Editora de publicação' },
+    { command: 'genero', label: 'Gênero / Categoria', example: '@genero:Ação', description: 'Gênero da obra' },
+    { command: 'tag', label: 'Tags / Assuntos', example: '@tag:Terror,Ficção', description: 'Tags separadas por vírgula' },
+    { command: 'idioma', label: 'Idioma', example: '@idioma:pt', description: 'Código do idioma (ex: pt, ja, en)' },
+    { command: 'classificacao', label: 'Classificação', example: '@classificacao:Livre', description: 'Classificação indicativa de idade' },
+    { command: 'sinopse', label: 'Sinopse', example: '@sinopse:ninja', description: 'Texto da sinopse' },
+    { command: 'publicacao', label: 'Publicação / Ano', example: '@publicacao:2020', description: 'Ano ou data de publicação' },
+    { command: 'tipo', label: 'Formato / Extensão', example: '@tipo:cbz', description: 'Extensão do arquivo (cbz, cbr, pdf)' }
   ];
 
   return (

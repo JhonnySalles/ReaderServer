@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Layers, Library, ChevronLeft, ChevronRight, RefreshCw, User } from 'lucide-react';
+import { Home, BookOpen, Layers, Library, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { authStorage, authenticateAutomatically } from '../../services/api';
 import './Sidebar.css';
 
@@ -10,8 +10,6 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
-  const username = authStorage.getUsername();
-
   const handleReauth = async () => {
     authStorage.clearAuth();
     await authenticateAutomatically();
@@ -21,20 +19,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   return (
     <aside className={`sidebar glass-panel ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <div className="sidebar-header">
-        <div className="logo-container">
-          <div className="logo-icon-wrapper">
-            <Library className="logo-icon" size={24} />
-          </div>
-          {isOpen && <span className="logo-text gradient-text-primary">Reader Server</span>}
-        </div>
-        <button 
-          id="toggle-sidebar-btn"
-          className="toggle-btn" 
-          onClick={onToggle} 
-          title={isOpen ? "Recolher menu" : "Expandir menu"}
-        >
-          {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-        </button>
+        {isOpen ? (
+          <>
+            <div className="logo-container">
+              <div className="logo-icon-wrapper">
+                <Library className="logo-icon" size={24} />
+              </div>
+              <span className="logo-text gradient-text-primary">Reader Server</span>
+            </div>
+            <button 
+              id="toggle-sidebar-btn"
+              className="toggle-btn" 
+              onClick={onToggle} 
+              title="Recolher menu"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </>
+        ) : (
+          <button 
+            id="toggle-sidebar-btn"
+            className="toggle-btn-collapsed" 
+            onClick={onToggle} 
+            title="Expandir menu"
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
       </div>
 
       <nav className="sidebar-nav">
@@ -69,40 +80,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       </nav>
 
       <div className="sidebar-footer">
-        {isOpen && (
-          <div className="user-profile-badge">
-            <div className="user-avatar">
-              <User size={16} />
-            </div>
-            <span className="user-name">{username}</span>
+        {isOpen ? (
+          <>
             <button 
               onClick={handleReauth} 
-              className="btn-logout" 
+              className="btn-sync-action" 
               title="Sincronizar / Renovar Acesso"
               id="btn-reauth"
             >
-              <RefreshCw size={14} />
+              <RefreshCw size={16} />
+              <span>Sincronizar Acesso</span>
             </button>
-          </div>
-        )}
-        
-        {isOpen && (
-          <div className="server-status">
-            <span className="status-dot"></span>
-            <span className="status-text">API Online :8083</span>
-          </div>
-        )}
-        
-        {!isOpen && (
+            <div className="server-status">
+              <span className="status-dot"></span>
+              <span className="status-text">API Online :8083</span>
+            </div>
+          </>
+        ) : (
           <button 
             onClick={handleReauth} 
-            className="btn-logout-collapsed" 
+            className="btn-sync-collapsed" 
             title="Sincronizar Acesso"
+            id="btn-reauth-collapsed"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={18} />
           </button>
         )}
       </div>
     </aside>
   );
 };
+

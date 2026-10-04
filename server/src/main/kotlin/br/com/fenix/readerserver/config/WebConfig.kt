@@ -26,6 +26,7 @@ class WebConfig : WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedMethods("*")
             .allowedOrigins(*allowedOrigins)
+            .exposedHeaders("Content-Disposition")
             .allowCredentials(true)
     }
 

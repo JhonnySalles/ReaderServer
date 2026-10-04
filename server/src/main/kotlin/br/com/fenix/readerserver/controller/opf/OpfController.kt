@@ -133,7 +133,13 @@ class OpfController(
     @Operation(summary = "Download OPF XML", description = "Faz o download do arquivo .opf.")
     @GetMapping(
         value = ["/{id}/download"],
-        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+        produces = [
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE,
+            MediaType.TEXT_PLAIN_VALUE,
+            MediaType.APPLICATION_OCTET_STREAM_VALUE,
+            MediaType.ALL_VALUE
+        ]
     )
     fun downloadXml(@PathVariable("id") id: UUID): ResponseEntity<String> {
         val dto = opfService.findById(id)
@@ -160,7 +166,7 @@ class OpfController(
 
         return ResponseEntity.ok()
             .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
-            .contentType(MediaType.APPLICATION_XML)
+            .contentType(MediaType.parseMediaType("application/xml;charset=UTF-8"))
             .body(content)
     }
 }

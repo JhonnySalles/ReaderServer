@@ -148,7 +148,13 @@ class BookController(
     @Operation(summary = "Download Conteúdo Vinculado do Livro (OPF XML)", description = "Faz o download do OPF associado ao livro.")
     @GetMapping(
         value = ["/{id}/download"],
-        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+        produces = [
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE,
+            MediaType.TEXT_PLAIN_VALUE,
+            MediaType.APPLICATION_OCTET_STREAM_VALUE,
+            MediaType.ALL_VALUE
+        ]
     )
     fun downloadLinkedContent(@PathVariable("id") id: UUID): ResponseEntity<String> {
         val bookDto = bookService.findById(id)
@@ -180,7 +186,7 @@ class BookController(
 
         return ResponseEntity.ok()
             .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
-            .contentType(MediaType.APPLICATION_XML)
+            .contentType(MediaType.parseMediaType("application/xml;charset=UTF-8"))
             .body(content)
     }
 }

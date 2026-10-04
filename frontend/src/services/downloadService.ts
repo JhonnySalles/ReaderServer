@@ -7,21 +7,31 @@ import api from './api';
 export async function downloadFile(url: string, defaultFilename: string = 'arquivo.xml'): Promise<boolean> {
   try {
     const response = await api.get(url, {
-      responseType: 'blob'
+      responseType: 'blob',
+      headers: {
+        'Accept': 'application/xml, text/xml, text/plain, application/octet-stream, */*'
+      }
     });
 
     // Tentar extrair o nome do arquivo a partir do header Content-Disposition
     let filename = defaultFilename;
-    const disposition = response.headers['content-disposition'];
-    if (disposition && disposition.indexOf('filename=') !== -1) {
-      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-      const matches = filenameRegex.exec(disposition);
-      if (matches != null && matches[1]) {
-        filename = matches[1].replace(/['"]/g, '');
+    const disposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
+    if (disposition) {
+      // Suporte para filename*=UTF-8''... ou filename="..."
+      const utf8FilenameRegex = /filename\*=UTF-8''([^;]+)/i;
+      const utf8Matches = utf8FilenameRegex.exec(disposition);
+      if (utf8Matches && utf8Matches[1]) {
+        filename = decodeURIComponent(utf8Matches[1]);
+      } else {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i;
+        const matches = filenameRegex.exec(disposition);
+        if (matches && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '').trim();
+        }
       }
     }
 
-    const contentTypeHeader = response.headers['content-type'];
+    const contentTypeHeader = response.headers['content-type'] || response.headers['Content-Type'];
     const contentType = typeof contentTypeHeader === 'string' ? contentTypeHeader : 'application/xml';
     const blob = new Blob([response.data], { type: contentType });
     const downloadUrl = window.URL.createObjectURL(blob);
@@ -33,9 +43,21 @@ export async function downloadFile(url: string, defaultFilename: string = 'arqui
     link.remove();
     window.URL.revokeObjectURL(downloadUrl);
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    let errorMessage = 'Erro ao baixar arquivo. Verifique se o servidor está ativo ou se o arquivo existe.';
+    if (error?.response?.data instanceof Blob) {
+      try {
+        const text = await error.response.data.text();
+        const json = JSON.parse(text);
+        if (json.message) {
+          errorMessage = `Erro no download: ${json.message}`;
+        }
+      } catch {
+        // Fallback para mensagem padrão
+      }
+    }
     console.error('Erro ao efetuar download:', error);
-    alert('Erro ao baixar arquivo. Verifique se o servidor está ativo ou se o arquivo existe.');
+    alert(errorMessage);
     return false;
   }
 }

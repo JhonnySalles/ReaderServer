@@ -59,13 +59,17 @@ export const Books: React.FC = () => {
   };
 
   const bookSuggestions = [
-    { command: 'volume', label: 'Volume', example: '@volume:1', description: 'Número do volume' },
-    { command: 'series', label: 'Série', example: '@series:Duna', description: 'Saga ou série do livro' },
-    { command: 'creator', label: 'Autor / Criador', example: '@creator:Tolkien', description: 'Autor ou criador da obra' },
-    { command: 'publisher', label: 'Editora', example: '@publisher:Rocco', description: 'Editora de publicação' },
-    { command: 'language', label: 'Idioma', example: '@language:pt', description: 'Código do idioma (ex: pt, en)' },
-    { command: 'subjects', label: 'Assunto / Tags', example: '@subjects:Ficção', description: 'Gênero ou assunto' },
-    { command: 'type', label: 'Formato / Extensão', example: '@type:epub', description: 'Extensão do arquivo' }
+    { command: 'volume', label: 'Volume / Edição', example: '@volume:1', description: 'Número ou volume' },
+    { command: 'serie', label: 'Série', example: '@serie:Duna', description: 'Saga ou série do livro' },
+    { command: 'autor', label: 'Autor / Criador', example: '@autor:Tolkien', description: 'Autor ou criador da obra' },
+    { command: 'contribuidor', label: 'Contribuidor / Tradutor', example: '@contribuidor:Fulano', description: 'Tradutor ou outro colaborador' },
+    { command: 'editora', label: 'Editora', example: '@editora:Rocco', description: 'Editora de publicação' },
+    { command: 'idioma', label: 'Idioma', example: '@idioma:pt', description: 'Código do idioma (ex: pt, en)' },
+    { command: 'tag', label: 'Assunto / Tags', example: '@tag:Ficção,Aventura', description: 'Tags separadas por vírgula' },
+    { command: 'isbn', label: 'Identificadores / ISBN', example: '@isbn:97885', description: 'Identificador único ou ISBN' },
+    { command: 'sinopse', label: 'Descrição / Sinopse', example: '@sinopse:espacial', description: 'Descrição da obra' },
+    { command: 'publicacao', label: 'Publicação / Data', example: '@publicacao:1965', description: 'Data de publicação' },
+    { command: 'tipo', label: 'Formato / Extensão', example: '@tipo:epub', description: 'Extensão do arquivo (epub, pdf, mobi)' }
   ];
 
   return (

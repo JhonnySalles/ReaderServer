@@ -17,27 +17,41 @@ function normalizeKey(key: string): string {
   switch (lower) {
     case 'author':
     case 'autor':
+    case 'creator':
+    case 'criador':
+      return 'author';
     case 'writer':
     case 'roteirista':
-      return 'author';
+      return 'writer';
+    case 'illustrator':
+    case 'ilustrador':
+    case 'desenhista':
+    case 'penciller':
+      return 'illustrator';
     case 'serie':
     case 'series':
+    case 'série':
       return 'series';
     case 'volume':
     case 'vol':
+    case 'edicao':
+    case 'edição':
+    case 'number':
+    case 'numero':
+    case 'número':
       return 'volume';
     case 'publisher':
     case 'editora':
       return 'publisher';
     case 'genre':
     case 'genero':
+    case 'gênero':
     case 'generos':
+    case 'gêneros':
       return 'genre';
-    case 'creator':
-    case 'criador':
-      return 'creator';
     case 'title':
     case 'titulo':
+    case 'título':
       return 'title';
     case 'language':
     case 'idioma':
@@ -45,13 +59,45 @@ function normalizeKey(key: string): string {
     case 'subjects':
     case 'subject':
     case 'assunto':
+    case 'assuntos':
     case 'tags':
-      return 'subjects';
+    case 'tag':
+      return 'tags';
     case 'type':
     case 'tipo':
     case 'ext':
+    case 'extensao':
+    case 'extensão':
     case 'extension':
       return 'type';
+    case 'sinopse':
+    case 'synopsis':
+    case 'resumo':
+    case 'summary':
+    case 'description':
+    case 'descricao':
+    case 'descrição':
+      return 'summary';
+    case 'publicacao':
+    case 'publicação':
+    case 'data':
+    case 'date':
+      return 'date';
+    case 'classificacao':
+    case 'classificação':
+    case 'rating':
+    case 'agerating':
+      return 'ageRating';
+    case 'contributor':
+    case 'contribuitor':
+    case 'contribuidor':
+      return 'contributor';
+    case 'identificadores':
+    case 'identificador':
+    case 'identifiers':
+    case 'identifier':
+    case 'isbn':
+      return 'identifiers';
     default:
       return lower;
   }

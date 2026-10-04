@@ -108,9 +108,16 @@ class ComicInfoController(
         val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
         return ResponseEntity.ok(comicInfoService.searchAdvanced(filter, pageable, assembler))
     }
+    @Operation(summary = "Download ComicInfo XML", description = "Faz o download do arquivo ComicInfo.xml.")
     @GetMapping(
         value = ["/{id}/download"],
-        produces = [MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE]
+        produces = [
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE,
+            MediaType.TEXT_PLAIN_VALUE,
+            MediaType.APPLICATION_OCTET_STREAM_VALUE,
+            MediaType.ALL_VALUE
+        ]
     )
     fun downloadXml(@PathVariable("id") id: UUID): ResponseEntity<String> {
         val dto = comicInfoService.findById(id)
@@ -119,7 +126,6 @@ class ComicInfoController(
             dataFiles[0].fileContent!!
         } else {
             // Se não houver arquivo bruto persistido, gera o XML básico
-            val title = dto.title.ifEmpty { dto.series }
             """<?xml version="1.0" encoding="utf-8"?>
 <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Title>${dto.title}</Title>
@@ -139,7 +145,7 @@ class ComicInfoController(
 
         return ResponseEntity.ok()
             .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
-            .contentType(MediaType.APPLICATION_XML)
+            .contentType(MediaType.parseMediaType("application/xml;charset=UTF-8"))
             .body(content)
     }
 }
