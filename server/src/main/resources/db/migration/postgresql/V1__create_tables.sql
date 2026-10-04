@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS comicinfo (
     maturity_rating VARCHAR(100) DEFAULT NULL,
     alternative_series VARCHAR(900) DEFAULT NULL,
     language VARCHAR(3) DEFAULT NULL,
+    volume REAL DEFAULT NULL,
     atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_comicinfo_series ON comicinfo ( series );
@@ -44,6 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_comicinfo_title ON comicinfo ( title );
 CREATE TABLE IF NOT EXISTS opf (
     id VARCHAR(36) PRIMARY KEY,
     title VARCHAR(900) DEFAULT NULL,
+    novel VARCHAR(255) DEFAULT NULL,
     creator VARCHAR(900) DEFAULT NULL,
     contributor VARCHAR(900) DEFAULT NULL,
     publisher VARCHAR(300) DEFAULT NULL,
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS opf (
     identifiers VARCHAR(900) DEFAULT NULL,
     series VARCHAR(900) DEFAULT NULL,
     series_index VARCHAR(50) DEFAULT NULL,
+    volume REAL DEFAULT NULL,
     rights VARCHAR(500) DEFAULT NULL,
     relation VARCHAR(500) DEFAULT NULL,
     atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP

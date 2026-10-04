@@ -58,6 +58,20 @@ class OpfService(
     }
 
     @Transactional(readOnly = true)
+    fun findByTitleExact(title: String): List<OpfDto> {
+        return opfRepository.findByTitleIgnoreCase(title).map {
+            mapper.parse(it, OpfDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun findBySeriesAndVolumeAndLanguage(series: String, volume: Float, language: String): List<OpfDto> {
+        return opfRepository.findBySeriesAndVolumeAndLanguage(series, volume, language).map {
+            mapper.parse(it, OpfDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
     fun searchAdvanced(filter: br.com.fenix.readerserver.dto.opf.OpfSearchFilterDto, pageable: Pageable, assembler: PagedResourcesAssembler<OpfDto>): PagedModel<EntityModel<OpfDto>> {
         val spec = br.com.fenix.readerserver.repository.opf.OpfSpecification.withFilters(filter)
         val page: Page<Opf> = opfRepository.findAll(spec, pageable)

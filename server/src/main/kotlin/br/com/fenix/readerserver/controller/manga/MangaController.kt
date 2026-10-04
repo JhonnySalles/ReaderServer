@@ -66,6 +66,37 @@ class MangaController(
         return ResponseEntity.ok(mangaService.findByFileName(fileName, pageable, assembler))
     }
 
+    @Operation(summary = "Busca Exata por Nome do Arquivo", description = "Retorna um único Manga pelo nome exato do arquivo ou 404 se não encontrado.")
+    @GetMapping(
+        value = ["/file-name"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findSingleByFileName(
+        @RequestParam("fileName") fileName: String
+    ): ResponseEntity<MangaDto> {
+        return ResponseEntity.ok(mangaService.findSingleByFileName(fileName))
+    }
+
+    @Operation(summary = "Busca por Série e Volume", description = "Retorna uma lista de Mangas pela série e volume.")
+    @GetMapping(
+        value = ["/search/serie-volume"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findBySerieAndVolume(
+        @RequestParam("serie") serie: String,
+        @RequestParam("volume") volume: Float
+    ): ResponseEntity<List<MangaDto>> {
+        return ResponseEntity.ok(mangaService.findBySerieAndVolume(serie, volume))
+    }
+
     @Operation(summary = "Busca Mangas por ComicInfo ID", description = "Retorna lista de mangas associados a um ComicInfo.")
     @GetMapping(
         value = ["/comicinfo/{comicInfoId}"],

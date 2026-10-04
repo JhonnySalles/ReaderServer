@@ -66,6 +66,55 @@ class ComicInfoController(
         return ResponseEntity.ok(comicInfoService.findByTitle(title, pageable, assembler))
     }
 
+    @Operation(summary = "Busca por Comic", description = "Retorna lista de ComicInfo pelo campo comic.")
+    @GetMapping(
+        value = ["/search/comic"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findByComic(
+        @RequestParam("comic") comic: String
+    ): ResponseEntity<List<ComicInfoDto>> {
+        return ResponseEntity.ok(comicInfoService.findByComic(comic))
+    }
+
+    @Operation(summary = "Busca por Série, Volume e Linguagem", description = "Retorna lista de ComicInfo pela combinação de Série, Volume e Linguagem.")
+    @GetMapping(
+        value = ["/search/serie-volume-language"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findBySeriesAndVolumeAndLanguage(
+        @RequestParam("serie") serie: String,
+        @RequestParam("volume") volume: Float,
+        @RequestParam("language") language: String
+    ): ResponseEntity<List<ComicInfoDto>> {
+        return ResponseEntity.ok(comicInfoService.findBySeriesAndVolumeAndLanguage(serie, volume, language))
+    }
+
+    @Operation(summary = "Busca por Título, Volume e Linguagem", description = "Retorna lista de ComicInfo pela combinação de Título, Volume e Linguagem.")
+    @GetMapping(
+        value = ["/search/title-volume-language"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findByTitleAndVolumeAndLanguage(
+        @RequestParam("title") title: String,
+        @RequestParam("volume") volume: Float,
+        @RequestParam("language") language: String
+    ): ResponseEntity<List<ComicInfoDto>> {
+        return ResponseEntity.ok(comicInfoService.findByTitleAndVolumeAndLanguage(title, volume, language))
+    }
+
     @Operation(summary = "Busca Avançada de ComicInfo (GET)", description = "Busca paginada com parâmetros na query.")
     @GetMapping(
         value = ["/search/advanced"],

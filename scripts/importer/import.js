@@ -143,21 +143,48 @@ function extractZipFile(filePath, targetFileRegex) {
   return null;
 }
 
-function parseComicInfoXml(xmlContent) {
+function parseComicInfoXml(xmlContent, fileName = '') {
   try {
     const parsed = xmlParser.parse(xmlContent);
     const root = parsed.ComicInfo || parsed.comicInfo || parsed;
     if (!root) return null;
 
     const getText = (val) => (val !== undefined && val !== null ? String(val).trim() : null);
-    const getFloat = (val) => (val !== undefined && val !== null && !isNaN(parseFloat(val)) ? parseFloat(val) : 0);
-    const getInt = (val) => (val !== undefined && val !== null && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0);
+    const getFloat = (val) => (val !== undefined && val !== null && !isNaN(parseFloat(val)) ? parseFloat(val) : null);
+    const getInt = (val) => (val !== undefined && val !== null && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : null);
+
+    // Cascata de volume para ComicInfo:
+    // 1- Tag <Volume>
+    // 2- Tag <Number>
+    // 3- Nome do arquivo (ex: "Volume 05", "Volume 05.5", "Vol. 05")
+    let volume = getFloat(root.Volume);
+    if (volume === null || isNaN(volume)) {
+      volume = getFloat(root.Number);
+    }
+    if ((volume === null || isNaN(volume)) && fileName) {
+      const volMatch = fileName.match(/(?:vol(?:ume|\.)?)\s*(\d+(?:\.\d+)?)/i);
+      if (volMatch) {
+        volume = parseFloat(volMatch[1]);
+      }
+    }
+
+    // Cascata de series para ComicInfo:
+    // 1- Tag <Series>
+    // 2- Nome do arquivo antes de " - Volume" ou ", Vol."
+    let series = getText(root.Series) || '';
+    if (!series && fileName) {
+      const seriesMatch = fileName.match(/^(.*?)(?:\s*-\s*Volume|\s*-\s*Vol\.?|,\s*Vol(?:ume|\.)?)/i);
+      if (seriesMatch) {
+        series = seriesMatch[1].trim();
+      }
+    }
 
     return {
       title: getText(root.Title) || '',
-      series: getText(root.Series) || '',
-      number: getFloat(root.Number),
-      volume: getInt(root.Volume),
+      series: series,
+      comic: fileName || '',
+      number: getFloat(root.Number) || 0,
+      volume: volume !== null && !isNaN(volume) ? volume : null,
       notes: getText(root.Notes),
       year: root.Year ? getInt(root.Year) : null,
       month: root.Month ? getInt(root.Month) : null,
@@ -199,7 +226,7 @@ function parseComicInfoXml(xmlContent) {
   }
 }
 
-function parseOpfXml(xmlContent) {
+function parseOpfXml(xmlContent, fileName = '') {
   try {
     const parsed = xmlParser.parse(xmlContent);
     const packageNode = parsed.package || parsed['opf:package'] || parsed;
@@ -219,8 +246,78 @@ function parseOpfXml(xmlContent) {
       return null;
     };
 
+    // Coleta todas as tags meta (normais e prefixadas)
+    let metaList = [];
+    if (metadataNode.meta) {
+      metaList = metaList.concat(Array.isArray(metadataNode.meta) ? metadataNode.meta : [metadataNode.meta]);
+    }
+    if (metadataNode['opf:meta']) {
+      metaList = metaList.concat(Array.isArray(metadataNode['opf:meta']) ? metadataNode['opf:meta'] : [metadataNode['opf:meta']]);
+    }
+
+    // 1. Cascata para Volume:
+    // 1- Tag <meta property="group-position"> ou refines/group-position
+    let volume = null;
+    const groupPosMeta = metaList.find(
+      (m) => m['@_property'] === 'group-position' || m['@_name'] === 'calibre:series_index'
+    );
+    if (groupPosMeta) {
+      const rawVal = groupPosMeta['#text'] !== undefined ? groupPosMeta['#text'] : groupPosMeta['@_content'];
+      if (rawVal !== undefined && rawVal !== null && !isNaN(parseFloat(rawVal))) {
+        volume = parseFloat(rawVal);
+      }
+    }
+
+    const rawTitle = extractField('title') || '';
+
+    // 2- Campo title: extrair vol. 01 ou volume 01.5 ou afins
+    if (volume === null || isNaN(volume)) {
+      const volMatchTitle = rawTitle.match(/(?:vol(?:ume|\.)?)\s*(\d+(?:\.\d+)?)/i);
+      if (volMatchTitle) {
+        volume = parseFloat(volMatchTitle[1]);
+      }
+    }
+
+    // 3- Nome do arquivo: extrair o valor em frente a Volume / Vol.
+    if ((volume === null || isNaN(volume)) && fileName) {
+      const volMatchFile = fileName.match(/(?:vol(?:ume|\.)?)\s*(\d+(?:\.\d+)?)/i);
+      if (volMatchFile) {
+        volume = parseFloat(volMatchFile[1]);
+      }
+    }
+
+    // 2. Cascata para Series:
+    // 1- Tag <meta property="belongs-to-collection">
+    let series = null;
+    const belongsToMeta = metaList.find(
+      (m) => m['@_property'] === 'belongs-to-collection' || m['@_name'] === 'calibre:series'
+    );
+    if (belongsToMeta) {
+      const rawVal = belongsToMeta['#text'] !== undefined ? belongsToMeta['#text'] : belongsToMeta['@_content'];
+      if (rawVal && typeof rawVal === 'string') {
+        series = rawVal.trim();
+      }
+    }
+
+    // 2- Campo title: antes de ", Vol." ou " - Volume "
+    if (!series && rawTitle) {
+      const seriesMatchTitle = rawTitle.match(/^(.*?)(?:\s*-\s*Volume|\s*-\s*Vol\.?|,\s*Vol(?:ume|\.)?)/i);
+      if (seriesMatchTitle) {
+        series = seriesMatchTitle[1].trim();
+      }
+    }
+
+    // 3- Nome do arquivo: antes de " - Volume" ou ", Vol."
+    if (!series && fileName) {
+      const seriesMatchFile = fileName.match(/^(.*?)(?:\s*-\s*Volume|\s*-\s*Vol\.?|,\s*Vol(?:ume|\.)?)/i);
+      if (seriesMatchFile) {
+        series = seriesMatchFile[1].trim();
+      }
+    }
+
     return {
-      title: extractField('title') || '',
+      title: rawTitle,
+      novel: fileName || '',
       creator: extractField('creator'),
       contributor: extractField('contributor'),
       publisher: extractField('publisher'),
@@ -229,6 +326,9 @@ function parseOpfXml(xmlContent) {
       subjects: extractField('subject'),
       language: extractField('language') || 'pt',
       identifiers: extractField('identifier'),
+      series: series || extractField('series') || null,
+      seriesIndex: extractField('series_index') || (volume !== null ? String(volume) : null),
+      volume: volume !== null && !isNaN(volume) ? volume : null,
       rights: extractField('rights'),
       relation: extractField('relation'),
     };
@@ -283,7 +383,24 @@ async function processMangaFile(filePath) {
   }
 
   if (extractedXml) {
-    comicInfoData = parseComicInfoXml(extractedXml.content);
+    comicInfoData = parseComicInfoXml(extractedXml.content, fileName);
+  }
+
+  // Fallbacks para volume e série se não vierem de ComicInfo XML
+  let resolvedVolume = comicInfoData?.volume ?? null;
+  if (resolvedVolume === null) {
+    const volMatch = fileName.match(/(?:vol(?:ume|\.)?)\s*(\d+(?:\.\d+)?)/i);
+    if (volMatch) {
+      resolvedVolume = parseFloat(volMatch[1]);
+    }
+  }
+
+  let resolvedSeries = comicInfoData?.series || null;
+  if (!resolvedSeries) {
+    const seriesMatch = fileName.match(/^(.*?)(?:\s*-\s*Volume|\s*-\s*Vol\.?|,\s*Vol(?:ume|\.)?)/i);
+    if (seriesMatch) {
+      resolvedSeries = seriesMatch[1].trim();
+    }
   }
 
   // Verificar se já existe na API
@@ -294,7 +411,9 @@ async function processMangaFile(filePath) {
   // 1. Criar ou Atualizar ComicInfo se tiver dados extraídos
   if (comicInfoData) {
     if (!comicInfoData.title) comicInfoData.title = rawName;
-    if (!comicInfoData.series) comicInfoData.series = rawName;
+    if (!comicInfoData.series) comicInfoData.series = resolvedSeries || rawName;
+    comicInfoData.comic = fileName;
+    comicInfoData.volume = resolvedVolume;
 
     try {
       if (comicInfoId) {
@@ -315,6 +434,8 @@ async function processMangaFile(filePath) {
     fileName: fileName,
     extension: ext.replace('.', ''),
     fileDate: fileDate,
+    volume: resolvedVolume,
+    serie: resolvedSeries,
     comicInfoId: comicInfoId,
   };
 
@@ -356,7 +477,24 @@ async function processBookFile(filePath) {
   }
 
   if (extractedOpf) {
-    opfData = parseOpfXml(extractedOpf.content);
+    opfData = parseOpfXml(extractedOpf.content, fileName);
+  }
+
+  // Fallbacks para volume e série se não vierem de OPF XML
+  let resolvedVolume = opfData?.volume ?? null;
+  if (resolvedVolume === null) {
+    const volMatch = fileName.match(/(?:vol(?:ume|\.)?)\s*(\d+(?:\.\d+)?)/i);
+    if (volMatch) {
+      resolvedVolume = parseFloat(volMatch[1]);
+    }
+  }
+
+  let resolvedSeries = opfData?.series || null;
+  if (!resolvedSeries) {
+    const seriesMatch = fileName.match(/^(.*?)(?:\s*-\s*Volume|\s*-\s*Vol\.?|,\s*Vol(?:ume|\.)?)/i);
+    if (seriesMatch) {
+      resolvedSeries = seriesMatch[1].trim();
+    }
   }
 
   // Verificar se já existe na API
@@ -367,6 +505,9 @@ async function processBookFile(filePath) {
   // 1. Criar ou Atualizar OPF se tiver dados extraídos
   if (opfData) {
     if (!opfData.title) opfData.title = rawName;
+    if (!opfData.series) opfData.series = resolvedSeries;
+    opfData.novel = fileName;
+    opfData.volume = resolvedVolume;
 
     try {
       if (opfId) {
@@ -387,6 +528,8 @@ async function processBookFile(filePath) {
     fileName: fileName,
     extension: ext.replace('.', ''),
     fileDate: fileDate,
+    volume: resolvedVolume,
+    serie: resolvedSeries,
     opfId: opfId,
   };
 

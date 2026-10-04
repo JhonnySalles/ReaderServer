@@ -18,6 +18,8 @@ export interface MangaItem {
   id?: string;
   nome?: string;
   fileName?: string;
+  serie?: string;
+  volume?: number;
   extension?: string;
   fileDate?: string;
   comicInfoId?: string;
@@ -50,6 +52,8 @@ export interface BookItem {
   id?: string;
   nome?: string;
   fileName?: string;
+  serie?: string;
+  volume?: number;
   extension?: string;
   fileDate?: string;
   opfId?: string;
@@ -71,4 +75,6 @@ export interface OpfItem {
   seriesIndex?: string;
   rights?: string;
   relation?: string;
+  novel?: string;
+  volume?: number;
 }

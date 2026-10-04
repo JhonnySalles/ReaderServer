@@ -103,6 +103,7 @@ export const Mangas: React.FC = () => {
 
   const mangaSuggestions = [
     { command: 'volume', label: 'Volume / Edição', example: '@volume:1', description: 'Número ou volume' },
+    { command: 'arquivo', label: 'Nome do Arquivo', example: '@arquivo:Capitulo_01', description: 'Nome do arquivo físico ou comic' },
     { command: 'serie', label: 'Série', example: '@serie:Naruto', description: 'Nome da franquia/série' },
     { command: 'autor', label: 'Autor / Criador', example: '@autor:Kishimoto', description: 'Autor ou criador da obra' },
     { command: 'roteirista', label: 'Roteirista', example: '@roteirista:Oda', description: 'Roteirista da história' },
@@ -216,6 +217,10 @@ export const Mangas: React.FC = () => {
                   <span className="modal-field-value">{selectedManga.fileName || 'N/A'}</span>
                 </div>
                 <div className="modal-field">
+                  <span className="modal-field-label"><Layers size={14} /> Volume</span>
+                  <span className="modal-field-value">{selectedManga.volume !== undefined && selectedManga.volume !== null ? selectedManga.volume : 'N/A'}</span>
+                </div>
+                <div className="modal-field">
                   <span className="modal-field-label"><Layers size={14} /> Extensão</span>
                   <span className="modal-field-value">{selectedManga.extension ? selectedManga.extension.toUpperCase() : 'N/A'}</span>
                 </div>
@@ -244,6 +249,12 @@ export const Mangas: React.FC = () => {
                     <span className="modal-field-label"><FileText size={14} /> Título</span>
                     <span className="modal-field-value">{selectedManga.comicInfo.title || 'N/A'}</span>
                   </div>
+                  {selectedManga.comicInfo.comic && (
+                    <div className="modal-field">
+                      <span className="modal-field-label"><HardDrive size={14} /> Arquivo Vinculado</span>
+                      <span className="modal-field-value">{selectedManga.comicInfo.comic}</span>
+                    </div>
+                  )}
                   <div className="modal-field">
                     <span className="modal-field-label"><Hash size={14} /> Edição / Volume</span>
                     <span className="modal-field-value">
@@ -321,6 +332,12 @@ export const Mangas: React.FC = () => {
                   <span className="modal-field-label"><Bookmark size={14} /> Série</span>
                   <span className="modal-field-value">{selectedComicInfo.series || 'N/A'}</span>
                 </div>
+                {selectedComicInfo.comic && (
+                  <div className="modal-field">
+                    <span className="modal-field-label"><HardDrive size={14} /> Arquivo Comic</span>
+                    <span className="modal-field-value">{selectedComicInfo.comic}</span>
+                  </div>
+                )}
                 <div className="modal-field">
                   <span className="modal-field-label"><Hash size={14} /> Número / Edição</span>
                   <span className="modal-field-value">{selectedComicInfo.number ?? 'N/A'}</span>

@@ -49,6 +49,12 @@ export const ComicInfoCard: React.FC<ComicInfoCardProps> = ({ comicInfo, onClick
         </div>
 
         <div className="card-meta">
+          {comicInfo.volume !== undefined && comicInfo.volume !== null && (
+            <div className="meta-item">
+              <Bookmark size={14} />
+              <span>Vol. {comicInfo.volume}</span>
+            </div>
+          )}
           {comicInfo.writer && (
             <div className="meta-item">
               <User size={14} />

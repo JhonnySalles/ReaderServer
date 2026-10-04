@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, FileCode2, FileText, Calendar, HardDrive, Tag, User, Globe, Hash, Building2, Info, Bookmark } from 'lucide-react';
+import { BookOpen, FileCode2, FileText, Calendar, HardDrive, Tag, User, Globe, Hash, Building2, Info, Bookmark, Layers } from 'lucide-react';
 import { Tabs } from '../../components/ui/Tabs';
 import type { TabItem } from '../../components/ui/Tabs';
 import { FilterBar } from '../../components/ui/FilterBar';
@@ -103,6 +103,7 @@ export const Books: React.FC = () => {
 
   const bookSuggestions = [
     { command: 'volume', label: 'Volume / Edição', example: '@volume:1', description: 'Número ou volume' },
+    { command: 'arquivo', label: 'Nome do Arquivo', example: '@arquivo:Livro_01', description: 'Nome do arquivo físico ou epub/novel' },
     { command: 'serie', label: 'Série', example: '@serie:Duna', description: 'Saga ou série do livro' },
     { command: 'autor', label: 'Autor / Criador', example: '@autor:Tolkien', description: 'Autor ou criador da obra' },
     { command: 'contribuidor', label: 'Contribuidor / Tradutor', example: '@contribuidor:Fulano', description: 'Tradutor ou outro colaborador' },
@@ -214,6 +215,10 @@ export const Books: React.FC = () => {
                   <span className="modal-field-value">{selectedBook.fileName || 'N/A'}</span>
                 </div>
                 <div className="modal-field">
+                  <span className="modal-field-label"><Layers size={14} /> Volume</span>
+                  <span className="modal-field-value">{selectedBook.volume !== undefined && selectedBook.volume !== null ? selectedBook.volume : 'N/A'}</span>
+                </div>
+                <div className="modal-field">
                   <span className="modal-field-label"><BookOpen size={14} /> Extensão</span>
                   <span className="modal-field-value">{selectedBook.extension ? selectedBook.extension.toUpperCase() : 'N/A'}</span>
                 </div>
@@ -242,6 +247,18 @@ export const Books: React.FC = () => {
                     <span className="modal-field-label"><User size={14} /> Autor (Creator)</span>
                     <span className="modal-field-value">{selectedBook.opf.creator || 'N/A'}</span>
                   </div>
+                  {selectedBook.opf.novel && (
+                    <div className="modal-field">
+                      <span className="modal-field-label"><HardDrive size={14} /> Arquivo Vinculado</span>
+                      <span className="modal-field-value">{selectedBook.opf.novel}</span>
+                    </div>
+                  )}
+                  {selectedBook.opf.volume !== undefined && selectedBook.opf.volume !== null && (
+                    <div className="modal-field">
+                      <span className="modal-field-label"><Layers size={14} /> Volume OPF</span>
+                      <span className="modal-field-value">{selectedBook.opf.volume}</span>
+                    </div>
+                  )}
                   <div className="modal-field">
                     <span className="modal-field-label"><Building2 size={14} /> Editora</span>
                     <span className="modal-field-value">{selectedBook.opf.publisher || 'N/A'}</span>
@@ -319,6 +336,18 @@ export const Books: React.FC = () => {
                   <span className="modal-field-label"><User size={14} /> Autor (Creator)</span>
                   <span className="modal-field-value">{selectedOpf.creator || 'N/A'}</span>
                 </div>
+                {selectedOpf.novel && (
+                  <div className="modal-field">
+                    <span className="modal-field-label"><HardDrive size={14} /> Arquivo Novel</span>
+                    <span className="modal-field-value">{selectedOpf.novel}</span>
+                  </div>
+                )}
+                {selectedOpf.volume !== undefined && selectedOpf.volume !== null && (
+                  <div className="modal-field">
+                    <span className="modal-field-label"><Layers size={14} /> Volume</span>
+                    <span className="modal-field-value">{selectedOpf.volume}</span>
+                  </div>
+                )}
                 {selectedOpf.contributor && (
                   <div className="modal-field">
                     <span className="modal-field-label"><User size={14} /> Contribuidor</span>

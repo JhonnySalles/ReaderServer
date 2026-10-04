@@ -35,12 +35,12 @@ data class ComicInfo(
     @Column(name = "series", length = 900, nullable = true)
     @field:XmlElement(name = "Series")
     var series: String = "",
+    @Column(name = "volume", nullable = true)
+    @field:XmlElement(name = "Volume")
+    var volume: Float? = null,
     @Transient
     @field:XmlElement(name = "Number")
     var number: Float = 0f,
-    @Transient
-    @field:XmlElement(name = "Volume")
-    var volume: Int = 0,
     @Transient
     @field:XmlElement(name = "Notes")
     var notes: String? = null,
@@ -164,7 +164,7 @@ data class ComicInfo(
 
     companion object : EntityFactory<UUID?, ComicInfo> {
         override fun create(id: UUID?): ComicInfo = ComicInfo(
-            id, null, "", "", "", 0F, 0, null, null, null, null, null, null,
+            id, null, "", "", "", null, 0F, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null,
             null, "", null, null, null, null, Manga.Unknown, null, null,
@@ -173,10 +173,11 @@ data class ComicInfo(
     }
 
     constructor(
-        id: UUID?, idMal: Long?, comic: String, title: String, series: String, publisher: String?, alternateSeries: String?,
+        id: UUID?, idMal: Long?, comic: String, title: String, series: String, volume: Float?, publisher: String?, alternateSeries: String?,
         storyArc: String?, seriesGroup: String?, imprint: String?, genre: String?, languageISO: String,
         ageRating: AgeRating?,
     ) : this(id, idMal, comic, title, series) {
+        this.volume = volume
         this.publisher = publisher
         this.alternateSeries = alternateSeries
         this.storyArc = storyArc
@@ -197,6 +198,8 @@ data class ComicInfo(
         genre = obj["genre"] as String?
         languageISO = obj["languageISO"] as String
 
+        if (obj.containsKey("volume"))
+            volume = (obj["volume"] as? Number)?.toFloat()
         if (obj.containsKey("idMal"))
             idMal = (obj["idMal"] as Double).toLong()
         if (obj.containsKey("ageRating"))
@@ -215,6 +218,7 @@ data class ComicInfo(
         this.comic = source.comic
         this.title = source.title
         this.series = source.series
+        this.volume = source.volume
         this.publisher = source.publisher
         this.alternateSeries = source.alternateSeries
         this.storyArc = source.storyArc
@@ -237,6 +241,9 @@ data class ComicInfo(
 
         if (source.series.isNotEmpty())
             this.series = source.series
+
+        if (source.volume != null)
+            this.volume = source.volume
 
         if (source.publisher != null)
             this.publisher = source.publisher

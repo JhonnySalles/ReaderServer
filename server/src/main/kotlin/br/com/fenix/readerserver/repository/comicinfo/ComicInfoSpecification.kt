@@ -35,6 +35,22 @@ object ComicInfoSpecification {
                 predicates.add(cb.like(cb.lower(root.get("title")), pattern))
             }
 
+            // Volume
+            if (!filter.volume.isNullOrBlank()) {
+                val volStr = filter.volume.trim()
+                val volFloat = volStr.toFloatOrNull()
+                if (volFloat != null) {
+                    predicates.add(cb.equal(root.get<Float>("volume"), volFloat))
+                }
+            }
+
+            // Comic / Arquivo
+            val comicVal = filter.comic ?: filter.arquivo
+            if (!comicVal.isNullOrBlank()) {
+                val pattern = "%${comicVal.trim().lowercase()}%"
+                predicates.add(cb.like(cb.lower(root.get("comic")), pattern))
+            }
+
             // Publisher
             if (!filter.publisher.isNullOrBlank()) {
                 val pattern = "%${filter.publisher.trim().lowercase()}%"

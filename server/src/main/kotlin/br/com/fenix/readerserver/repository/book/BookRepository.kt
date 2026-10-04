@@ -34,4 +34,12 @@ interface BookRepository : JpaRepository<Book, UUID?>, JpaSpecificationExecutor<
     @EntityGraph(attributePaths = ["opf"])
     @Query("SELECT b FROM Book b WHERE b.opfId = :opfId")
     fun findByOpfIdPaged(@Param("opfId") opfId: UUID, pageable: Pageable): Page<Book>
+
+    @EntityGraph(attributePaths = ["opf"])
+    @Query("SELECT b FROM Book b WHERE LOWER(b.fileName) = LOWER(:fileName)")
+    fun findByFileNameExact(@Param("fileName") fileName: String): Optional<Book>
+
+    @EntityGraph(attributePaths = ["opf"])
+    @Query("SELECT b FROM Book b WHERE LOWER(b.serie) = LOWER(:serie) AND b.volume = :volume")
+    fun findBySerieAndVolume(@Param("serie") serie: String, @Param("volume") volume: Float): List<Book>
 }

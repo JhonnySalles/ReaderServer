@@ -22,7 +22,7 @@ data class ComicInfoDto(
     @JsonView(Views.Detail::class)
     var number: Float = 0f,
     @JsonView(Views.Detail::class)
-    var volume: Int = 0,
+    var volume: Float? = null,
     @JsonView(Views.Detail::class)
     var notes: String? = null,
     @JsonView(Views.Detail::class)

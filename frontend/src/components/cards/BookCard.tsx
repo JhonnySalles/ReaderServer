@@ -58,6 +58,17 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onClick }) => {
             <Calendar size={14} />
             <span>{formattedDate}</span>
           </div>
+          {(book.volume !== undefined && book.volume !== null) ? (
+            <div className="meta-item">
+              <BookOpen size={14} />
+              <span>Vol. {book.volume}</span>
+            </div>
+          ) : (book.opf?.volume !== undefined && book.opf?.volume !== null) ? (
+            <div className="meta-item">
+              <BookOpen size={14} />
+              <span>Vol. {book.opf.volume}</span>
+            </div>
+          ) : null}
           {book.opf && (
             <div className="meta-item badge-linked-book" title={`Vinculado: ${book.opf.title || book.opf.creator}`}>
               <Info size={14} />

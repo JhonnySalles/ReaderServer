@@ -5,6 +5,8 @@ data class MangaSearchFilterDto(
     val serie: String? = null,
     val series: String? = null,
     val volume: String? = null,
+    val arquivo: String? = null,
+    val fileName: String? = null,
     val author: String? = null,
     val publisher: String? = null,
     val genre: String? = null,

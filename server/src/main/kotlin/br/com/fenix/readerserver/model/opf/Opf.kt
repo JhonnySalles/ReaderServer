@@ -25,6 +25,10 @@ data class Opf(
     @field:XmlElement(name = "title")
     var title: String = "",
 
+    @Column(name = "novel", length = 255, nullable = true)
+    @field:XmlElement(name = "novel")
+    var novel: String? = null,
+
     @Column(name = "creator", length = 900, nullable = true)
     @field:XmlElement(name = "creator")
     var creator: String? = null,
@@ -65,6 +69,10 @@ data class Opf(
     @field:XmlElement(name = "seriesIndex")
     var seriesIndex: String? = null,
 
+    @Column(name = "volume", nullable = true)
+    @field:XmlElement(name = "volume")
+    var volume: Float? = null,
+
     @Column(name = "rights", length = 500, nullable = true)
     @field:XmlElement(name = "rights")
     var rights: String? = null,
@@ -78,6 +86,7 @@ data class Opf(
         override fun create(id: UUID?): Opf = Opf(
             id = id,
             title = "",
+            novel = null,
             creator = null,
             contributor = null,
             publisher = null,
@@ -88,6 +97,7 @@ data class Opf(
             identifiers = null,
             series = null,
             seriesIndex = null,
+            volume = null,
             rights = null,
             relation = null
         )
@@ -102,6 +112,7 @@ data class Opf(
     override fun merge(source: Opf) {
         this.id = source.id
         this.title = source.title
+        this.novel = source.novel
         this.creator = source.creator
         this.contributor = source.contributor
         this.publisher = source.publisher
@@ -112,6 +123,7 @@ data class Opf(
         this.identifiers = source.identifiers
         this.series = source.series
         this.seriesIndex = source.seriesIndex
+        this.volume = source.volume
         this.rights = source.rights
         this.relation = source.relation
     }
@@ -119,6 +131,8 @@ data class Opf(
     override fun patch(source: Opf) {
         if (source.title.isNotEmpty())
             this.title = source.title
+        if (source.novel != null)
+            this.novel = source.novel
         if (source.creator != null)
             this.creator = source.creator
         if (source.contributor != null)
@@ -139,6 +153,8 @@ data class Opf(
             this.series = source.series
         if (source.seriesIndex != null)
             this.seriesIndex = source.seriesIndex
+        if (source.volume != null)
+            this.volume = source.volume
         if (source.rights != null)
             this.rights = source.rights
         if (source.relation != null)

@@ -66,6 +66,37 @@ class BookController(
         return ResponseEntity.ok(bookService.findByFileName(fileName, pageable, assembler))
     }
 
+    @Operation(summary = "Busca Exata por Nome do Arquivo", description = "Retorna um único Livro/ePub pelo nome exato do arquivo ou 404 se não encontrado.")
+    @GetMapping(
+        value = ["/file-name"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findSingleByFileName(
+        @RequestParam("fileName") fileName: String
+    ): ResponseEntity<BookDto> {
+        return ResponseEntity.ok(bookService.findSingleByFileName(fileName))
+    }
+
+    @Operation(summary = "Busca por Série e Volume", description = "Retorna uma lista de Livros/ePubs pela série e volume.")
+    @GetMapping(
+        value = ["/search/serie-volume"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findBySerieAndVolume(
+        @RequestParam("serie") serie: String,
+        @RequestParam("volume") volume: Float
+    ): ResponseEntity<List<BookDto>> {
+        return ResponseEntity.ok(bookService.findBySerieAndVolume(serie, volume))
+    }
+
     @Operation(summary = "Busca Livros por OPF ID", description = "Retorna lista de livros associados a um OPF.")
     @GetMapping(
         value = ["/opf/{opfId}"],

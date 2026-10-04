@@ -51,6 +51,27 @@ class ComicInfoService(
     }
 
     @Transactional(readOnly = true)
+    fun findByComic(comic: String): List<ComicInfoDto> {
+        return comicInfoRepository.findByComicIgnoreCase(comic).map {
+            mapper.parse(it, ComicInfoDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun findBySeriesAndVolumeAndLanguage(series: String, volume: Float, language: String): List<ComicInfoDto> {
+        return comicInfoRepository.findBySeriesAndVolumeAndLanguage(series, volume, language).map {
+            mapper.parse(it, ComicInfoDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun findByTitleAndVolumeAndLanguage(title: String, volume: Float, language: String): List<ComicInfoDto> {
+        return comicInfoRepository.findByTitleAndVolumeAndLanguage(title, volume, language).map {
+            mapper.parse(it, ComicInfoDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
     fun searchAdvanced(filter: br.com.fenix.readerserver.dto.comicinfo.ComicInfoSearchFilterDto, pageable: Pageable, assembler: PagedResourcesAssembler<ComicInfoDto>): PagedModel<EntityModel<ComicInfoDto>> {
         val spec = br.com.fenix.readerserver.repository.comicinfo.ComicInfoSpecification.withFilters(filter)
         val page: Page<ComicInfo> = comicInfoRepository.findAll(spec, pageable)

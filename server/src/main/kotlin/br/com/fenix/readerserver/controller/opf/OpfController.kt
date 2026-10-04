@@ -87,6 +87,38 @@ class OpfController(
         return ResponseEntity.ok(opfService.findBySeries(series, pageable, assembler))
     }
 
+    @Operation(summary = "Busca Exata por Título", description = "Retorna lista de OPFs pelo título exato.")
+    @GetMapping(
+        value = ["/search/title-exact"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findByTitleExact(
+        @RequestParam("title") title: String
+    ): ResponseEntity<List<OpfDto>> {
+        return ResponseEntity.ok(opfService.findByTitleExact(title))
+    }
+
+    @Operation(summary = "Busca por Série, Volume e Linguagem", description = "Retorna lista de OPFs pela combinação de Série, Volume e Linguagem.")
+    @GetMapping(
+        value = ["/search/serie-volume-language"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findBySeriesAndVolumeAndLanguage(
+        @RequestParam("serie") serie: String,
+        @RequestParam("volume") volume: Float,
+        @RequestParam("language") language: String
+    ): ResponseEntity<List<OpfDto>> {
+        return ResponseEntity.ok(opfService.findBySeriesAndVolumeAndLanguage(serie, volume, language))
+    }
+
     @Operation(summary = "Busca Avançada de OPF (GET)", description = "Busca paginada com parâmetros na query.")
     @GetMapping(
         value = ["/search/advanced"],

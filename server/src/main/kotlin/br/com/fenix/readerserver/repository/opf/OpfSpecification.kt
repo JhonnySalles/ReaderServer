@@ -28,6 +28,22 @@ object OpfSpecification {
                 predicates.add(cb.like(cb.lower(root.get("title")), pattern))
             }
 
+            // Volume
+            if (!filter.volume.isNullOrBlank()) {
+                val volStr = filter.volume.trim()
+                val volFloat = volStr.toFloatOrNull()
+                if (volFloat != null) {
+                    predicates.add(cb.equal(root.get<Float>("volume"), volFloat))
+                }
+            }
+
+            // Novel / Arquivo
+            val novelVal = filter.novel ?: filter.arquivo
+            if (!novelVal.isNullOrBlank()) {
+                val pattern = "%${novelVal.trim().lowercase()}%"
+                predicates.add(cb.like(cb.lower(root.get("novel")), pattern))
+            }
+
             // Creator / Author
             val authorVal = filter.creator ?: filter.author
             if (!authorVal.isNullOrBlank()) {

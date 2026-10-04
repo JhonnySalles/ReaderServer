@@ -62,6 +62,21 @@ class BookService(
     }
 
     @Transactional(readOnly = true)
+    fun findSingleByFileName(fileName: String): BookDto {
+        val entity = bookRepository.findByFileNameExact(fileName).orElseThrow {
+            InvalidNotFoundException("No records found for fileName: $fileName")
+        }
+        return mapper.parse(entity, BookDto::class.java)
+    }
+
+    @Transactional(readOnly = true)
+    fun findBySerieAndVolume(serie: String, volume: Float): List<BookDto> {
+        return bookRepository.findBySerieAndVolume(serie, volume).map {
+            mapper.parse(it, BookDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
     fun findByOpfId(opfId: UUID): List<BookDto> {
         return bookRepository.findByOpfId(opfId).map {
             mapper.parse(it, BookDto::class.java)

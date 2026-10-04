@@ -62,6 +62,21 @@ class MangaService(
     }
 
     @Transactional(readOnly = true)
+    fun findSingleByFileName(fileName: String): MangaDto {
+        val entity = mangaRepository.findByFileNameExact(fileName).orElseThrow {
+            InvalidNotFoundException("No records found for fileName: $fileName")
+        }
+        return mapper.parse(entity, MangaDto::class.java)
+    }
+
+    @Transactional(readOnly = true)
+    fun findBySerieAndVolume(serie: String, volume: Float): List<MangaDto> {
+        return mangaRepository.findBySerieAndVolume(serie, volume).map {
+            mapper.parse(it, MangaDto::class.java)
+        }
+    }
+
+    @Transactional(readOnly = true)
     fun findByComicInfoId(comicInfoId: UUID): List<MangaDto> {
         return mangaRepository.findByComicInfoId(comicInfoId).map {
             mapper.parse(it, MangaDto::class.java)

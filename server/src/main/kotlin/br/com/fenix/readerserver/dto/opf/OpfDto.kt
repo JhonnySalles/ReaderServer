@@ -13,6 +13,9 @@ data class OpfDto(
     var title: String = "",
 
     @JsonView(Views.Detail::class)
+    var novel: String? = null,
+
+    @JsonView(Views.Detail::class)
     var creator: String? = null,
 
     @JsonView(Views.Detail::class)
@@ -41,6 +44,9 @@ data class OpfDto(
 
     @JsonView(Views.Detail::class)
     var seriesIndex: String? = null,
+
+    @JsonView(Views.Detail::class)
+    var volume: Float? = null,
 
     @JsonView(Views.Detail::class)
     var rights: String? = null,

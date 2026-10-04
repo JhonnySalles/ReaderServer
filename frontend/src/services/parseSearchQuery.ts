@@ -40,6 +40,14 @@ function normalizeKey(key: string): string {
     case 'numero':
     case 'número':
       return 'volume';
+    case 'arquivo':
+    case 'filename':
+    case 'file_name':
+    case 'file':
+    case 'ficheiro':
+    case 'comic':
+    case 'novel':
+      return 'arquivo';
     case 'publisher':
     case 'editora':
       return 'publisher';

@@ -50,6 +50,12 @@ export const OpfCard: React.FC<OpfCardProps> = ({ opf, onClick }) => {
         </div>
 
         <div className="card-meta">
+          {opf.volume !== undefined && opf.volume !== null && (
+            <div className="meta-item">
+              <Book size={14} />
+              <span>Vol. {opf.volume}</span>
+            </div>
+          )}
           {opf.publisher && (
             <div className="meta-item">
               <span>{opf.publisher}</span>

@@ -58,6 +58,17 @@ export const MangaCard: React.FC<MangaCardProps> = ({ manga, onClick }) => {
             <Calendar size={14} />
             <span>{formattedDate}</span>
           </div>
+          {(manga.volume !== undefined && manga.volume !== null) ? (
+            <div className="meta-item">
+              <Layers size={14} />
+              <span>Vol. {manga.volume}</span>
+            </div>
+          ) : (manga.comicInfo?.volume !== undefined && manga.comicInfo?.volume !== null) ? (
+            <div className="meta-item">
+              <Layers size={14} />
+              <span>Vol. {manga.comicInfo.volume}</span>
+            </div>
+          ) : null}
           {manga.comicInfo && (
             <div className="meta-item badge-linked" title={`Vinculado: ${manga.comicInfo.series || manga.comicInfo.title}`}>
               <Info size={14} />

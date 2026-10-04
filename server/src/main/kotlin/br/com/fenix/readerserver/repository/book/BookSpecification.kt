@@ -45,10 +45,21 @@ object BookSpecification {
                 val volStr = filter.volume.trim()
                 val volFloat = volStr.toFloatOrNull()
                 if (volFloat != null) {
-                    predicates.add(cb.equal(root.get<Float>("volume"), volFloat))
+                    val bVol = cb.equal(root.get<Float>("volume"), volFloat)
+                    val oVol = cb.equal(opfJoin.get<Float>("volume"), volFloat)
+                    predicates.add(cb.or(bVol, oVol))
                 } else {
                     predicates.add(cb.like(cb.lower(root.get<String>("nome")), "%${volStr.lowercase()}%"))
                 }
+            }
+
+            // Arquivo / FileName / Novel
+            val arquivoVal = filter.arquivo ?: filter.fileName
+            if (!arquivoVal.isNullOrBlank()) {
+                val pattern = "%${arquivoVal.trim().lowercase()}%"
+                val bFile = cb.like(cb.lower(root.get("fileName")), pattern)
+                val oNovel = cb.like(cb.lower(opfJoin.get("novel")), pattern)
+                predicates.add(cb.or(bFile, oNovel))
             }
 
             // Creator / Author

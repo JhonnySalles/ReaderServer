@@ -48,11 +48,22 @@ object MangaSpecification {
                 val volStr = filter.volume.trim()
                 val volFloat = volStr.toFloatOrNull()
                 if (volFloat != null) {
-                    predicates.add(cb.equal(root.get<Float>("volume"), volFloat))
+                    val mVol = cb.equal(root.get<Float>("volume"), volFloat)
+                    val cVol = cb.equal(comicInfoJoin.get<Float>("volume"), volFloat)
+                    predicates.add(cb.or(mVol, cVol))
                 } else {
                     // try like on string or converted
                     predicates.add(cb.like(cb.lower(root.get<String>("nome")), "%${volStr.lowercase()}%"))
                 }
+            }
+
+            // Arquivo / FileName / Comic
+            val arquivoVal = filter.arquivo ?: filter.fileName
+            if (!arquivoVal.isNullOrBlank()) {
+                val pattern = "%${arquivoVal.trim().lowercase()}%"
+                val mFile = cb.like(cb.lower(root.get("fileName")), pattern)
+                val cComic = cb.like(cb.lower(comicInfoJoin.get("comic")), pattern)
+                predicates.add(cb.or(mFile, cComic))
             }
 
             // Author / Writer

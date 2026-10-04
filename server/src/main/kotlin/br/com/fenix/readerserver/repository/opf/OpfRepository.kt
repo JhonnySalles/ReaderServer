@@ -22,4 +22,10 @@ interface OpfRepository : JpaRepository<Opf, UUID>, JpaSpecificationExecutor<Opf
 
     @Query("SELECT o FROM Opf o WHERE o.series LIKE CONCAT('%', :series, '%')")
     fun findBySeriesContaining(@Param("series") series: String, pageable: Pageable): Page<Opf>
+
+    @Query("SELECT o FROM Opf o WHERE LOWER(o.title) = LOWER(:title)")
+    fun findByTitleIgnoreCase(@Param("title") title: String): List<Opf>
+
+    @Query("SELECT o FROM Opf o WHERE LOWER(o.series) = LOWER(:series) AND o.volume = :volume AND LOWER(o.language) = LOWER(:language)")
+    fun findBySeriesAndVolumeAndLanguage(@Param("series") series: String, @Param("volume") volume: Float, @Param("language") language: String): List<Opf>
 }
