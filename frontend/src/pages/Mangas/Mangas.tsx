@@ -10,6 +10,8 @@ import { ComicInfoCard } from '../../components/cards/ComicInfoCard';
 import { useInfinitePagination } from '../../hooks/useInfinitePagination';
 import type { MangaItem, ComicInfoItem } from '../../types/api';
 import { downloadFile } from '../../services/downloadService';
+import { formatDate } from '../../services/formatters';
+import api from '../../services/api';
 import './Mangas.css';
 
 export const Mangas: React.FC = () => {
@@ -17,6 +19,7 @@ export const Mangas: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc');
   const [modalDownloading, setModalDownloading] = useState(false);
+  const [modalDeleting, setModalDeleting] = useState(false);
 
   // Estado dos itens selecionados para exibição no modal
   const [selectedManga, setSelectedManga] = useState<MangaItem | null>(null);
@@ -56,6 +59,46 @@ export const Mangas: React.FC = () => {
 
   const handleDirectionToggle = () => {
     setDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const handleDeleteManga = async () => {
+    if (!selectedManga?.id || modalDeleting) return;
+    const confirmName = selectedManga.nome || selectedManga.fileName || 'este mangá';
+    if (!window.confirm(`Tem certeza que deseja excluir o registro de "${confirmName}"?`)) {
+      return;
+    }
+
+    try {
+      setModalDeleting(true);
+      await api.delete(`/api/manga/${selectedManga.id}`);
+      setSelectedManga(null);
+      mangasPagination.refresh();
+    } catch (err) {
+      console.error('Erro ao excluir mangá:', err);
+      alert('Erro ao excluir o mangá. Tente novamente.');
+    } finally {
+      setModalDeleting(false);
+    }
+  };
+
+  const handleDeleteComicInfo = async () => {
+    if (!selectedComicInfo?.id || modalDeleting) return;
+    const confirmName = selectedComicInfo.series || selectedComicInfo.title || 'este ComicInfo';
+    if (!window.confirm(`Tem certeza que deseja excluir o metadado ComicInfo "${confirmName}"?`)) {
+      return;
+    }
+
+    try {
+      setModalDeleting(true);
+      await api.delete(`/api/comicinfo/${selectedComicInfo.id}`);
+      setSelectedComicInfo(null);
+      comicInfoPagination.refresh();
+    } catch (err) {
+      console.error('Erro ao excluir ComicInfo:', err);
+      alert('Erro ao excluir o ComicInfo. Tente novamente.');
+    } finally {
+      setModalDeleting(false);
+    }
   };
 
   const mangaSuggestions = [
@@ -155,6 +198,9 @@ export const Mangas: React.FC = () => {
         } : undefined}
         downloadLabel="Baixar ComicInfo"
         downloading={modalDownloading}
+        onDelete={handleDeleteManga}
+        deleteLabel="Excluir Mangá"
+        deleting={modalDeleting}
       >
         {selectedManga && (
           <>
@@ -176,7 +222,7 @@ export const Mangas: React.FC = () => {
                 <div className="modal-field">
                   <span className="modal-field-label"><Calendar size={14} /> Data do Arquivo</span>
                   <span className="modal-field-value">
-                    {selectedManga.fileDate ? new Date(selectedManga.fileDate).toLocaleString('pt-BR') : 'Sem data'}
+                    {selectedManga.fileDate ? formatDate(selectedManga.fileDate) : 'Sem data'}
                   </span>
                 </div>
                 <div className="modal-field">
@@ -258,6 +304,9 @@ export const Mangas: React.FC = () => {
         }}
         downloadLabel="Baixar ComicInfo.xml"
         downloading={modalDownloading}
+        onDelete={handleDeleteComicInfo}
+        deleteLabel="Excluir Metadado"
+        deleting={modalDeleting}
       >
         {selectedComicInfo && (
           <>

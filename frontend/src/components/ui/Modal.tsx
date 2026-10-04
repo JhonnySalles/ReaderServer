@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Loader2 } from 'lucide-react';
+import { X, Download, Loader2, Trash2 } from 'lucide-react';
 import './Modal.css';
 
 interface ModalProps {
@@ -13,6 +13,9 @@ interface ModalProps {
   onDownload?: () => void;
   downloadLabel?: string;
   downloading?: boolean;
+  onDelete?: () => void;
+  deleteLabel?: string;
+  deleting?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -24,7 +27,10 @@ export const Modal: React.FC<ModalProps> = ({
   maxWidth,
   onDownload,
   downloadLabel = "Baixar",
-  downloading = false
+  downloading = false,
+  onDelete,
+  deleteLabel = "Excluir",
+  deleting = false
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,11 +71,23 @@ export const Modal: React.FC<ModalProps> = ({
                 type="button" 
                 className="modal-download-btn" 
                 onClick={onDownload} 
-                disabled={downloading}
+                disabled={downloading || deleting}
                 title={downloadLabel}
               >
                 {downloading ? <Loader2 size={14} className="spin-loader" /> : <Download size={14} />}
                 <span>{downloading ? 'Baixando...' : downloadLabel}</span>
+              </button>
+            )}
+            {onDelete && (
+              <button 
+                type="button" 
+                className="modal-delete-btn" 
+                onClick={onDelete} 
+                disabled={deleting || downloading}
+                title={deleteLabel}
+              >
+                {deleting ? <Loader2 size={14} className="spin-loader" /> : <Trash2 size={14} />}
+                <span>{deleting ? 'Excluindo...' : deleteLabel}</span>
               </button>
             )}
             <button 

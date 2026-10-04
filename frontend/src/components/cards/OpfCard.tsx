@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tag, Book, User, Globe, Calendar, Download, Loader2 } from 'lucide-react';
 import type { OpfItem } from '../../types/api';
 import { downloadFile } from '../../services/downloadService';
+import { formatDate } from '../../services/formatters';
 import './Card.css';
 
 interface OpfCardProps {
@@ -57,7 +58,7 @@ export const OpfCard: React.FC<OpfCardProps> = ({ opf, onClick }) => {
           {opf.datePublished && (
             <div className="meta-item">
               <Calendar size={14} />
-              <span>{opf.datePublished}</span>
+              <span>{formatDate(opf.datePublished)}</span>
             </div>
           )}
           {opf.language && (

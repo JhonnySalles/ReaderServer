@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: readerserver-db
+    restart: always
+    environment:
+      POSTGRES_DB: readerserver
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - reader-network
+
+  # Servidor Backend (ReaderServer API)
+  readerserver-api:
+    image: readerserver-server:latest
+    container_name: readerserver-api
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PORT: 8083
+      DB_URL: jdbc:postgresql://postgres:5432/readerserver
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      CORS_ALLOWED_ORIGINS: "http://localhost:5179,http://localhost:80,http://localhost:3000,http://readerserver.local"
+      JWT_SECRET_KEY: "minha_chave_secreta_super_segura"
+      JWT_EXPIRE_LENGTH: 86400000
+      MDNS_DISCOVERY_ENABLED: "true"
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC"
+    # Opcional: montar application.yml customizado externamente
+    # volumes:
+    #   - ./server-config/application.yml:/app/config/application.yml
+    ports:
+      - "8083:8083"
+    networks:
+      - reader-network
+
+  # Frontend Web (React + Nginx)
+  readerserver-web:
+    image: readerserver-frontend:latest
+    container_name: readerserver-web
+    restart: always
+    depends_on:
+      - readerserver-api
+    environment:
+      VITE_API_BASE_URL: "http://localhost:8083"
+      VITE_API_USERNAME: "admin"
+      VITE_API_PASSWORD: "admin"
+    ports:
+      - "5179:80"
+    networks:
+      - reader-network
+
+networks:
+  reader-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

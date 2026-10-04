@@ -10,6 +10,8 @@ import { OpfCard } from '../../components/cards/OpfCard';
 import { useInfinitePagination } from '../../hooks/useInfinitePagination';
 import type { BookItem, OpfItem } from '../../types/api';
 import { downloadFile } from '../../services/downloadService';
+import { formatDate } from '../../services/formatters';
+import api from '../../services/api';
 import './Books.css';
 
 export const Books: React.FC = () => {
@@ -17,6 +19,7 @@ export const Books: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc');
   const [modalDownloading, setModalDownloading] = useState(false);
+  const [modalDeleting, setModalDeleting] = useState(false);
 
   // Estado dos itens selecionados para o modal
   const [selectedBook, setSelectedBook] = useState<BookItem | null>(null);
@@ -56,6 +59,46 @@ export const Books: React.FC = () => {
 
   const handleDirectionToggle = () => {
     setDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const handleDeleteBook = async () => {
+    if (!selectedBook?.id || modalDeleting) return;
+    const confirmName = selectedBook.nome || selectedBook.fileName || 'este livro';
+    if (!window.confirm(`Tem certeza que deseja excluir o registro de "${confirmName}"?`)) {
+      return;
+    }
+
+    try {
+      setModalDeleting(true);
+      await api.delete(`/api/book/${selectedBook.id}`);
+      setSelectedBook(null);
+      booksPagination.refresh();
+    } catch (err) {
+      console.error('Erro ao excluir livro:', err);
+      alert('Erro ao excluir o livro. Tente novamente.');
+    } finally {
+      setModalDeleting(false);
+    }
+  };
+
+  const handleDeleteOpf = async () => {
+    if (!selectedOpf?.id || modalDeleting) return;
+    const confirmName = selectedOpf.title || 'este metadado OPF';
+    if (!window.confirm(`Tem certeza que deseja excluir o metadado "${confirmName}"?`)) {
+      return;
+    }
+
+    try {
+      setModalDeleting(true);
+      await api.delete(`/api/opf/${selectedOpf.id}`);
+      setSelectedOpf(null);
+      opfPagination.refresh();
+    } catch (err) {
+      console.error('Erro ao excluir metadado OPF:', err);
+      alert('Erro ao excluir o metadado OPF. Tente novamente.');
+    } finally {
+      setModalDeleting(false);
+    }
   };
 
   const bookSuggestions = [
@@ -153,6 +196,9 @@ export const Books: React.FC = () => {
         } : undefined}
         downloadLabel="Baixar OPF"
         downloading={modalDownloading}
+        onDelete={handleDeleteBook}
+        deleteLabel="Excluir Livro"
+        deleting={modalDeleting}
       >
         {selectedBook && (
           <>
@@ -174,7 +220,7 @@ export const Books: React.FC = () => {
                 <div className="modal-field">
                   <span className="modal-field-label"><Calendar size={14} /> Data do Arquivo</span>
                   <span className="modal-field-value">
-                    {selectedBook.fileDate ? new Date(selectedBook.fileDate).toLocaleString('pt-BR') : 'Sem data'}
+                    {selectedBook.fileDate ? formatDate(selectedBook.fileDate) : 'Sem data'}
                   </span>
                 </div>
                 <div className="modal-field">
@@ -202,7 +248,7 @@ export const Books: React.FC = () => {
                   </div>
                   <div className="modal-field">
                     <span className="modal-field-label"><Calendar size={14} /> Publicação</span>
-                    <span className="modal-field-value">{selectedBook.opf.datePublished || 'N/A'}</span>
+                    <span className="modal-field-value">{formatDate(selectedBook.opf.datePublished)}</span>
                   </div>
                   <div className="modal-field">
                     <span className="modal-field-label"><Globe size={14} /> Idioma</span>
@@ -256,6 +302,9 @@ export const Books: React.FC = () => {
         }}
         downloadLabel="Baixar OPF XML"
         downloading={modalDownloading}
+        onDelete={handleDeleteOpf}
+        deleteLabel="Excluir Metadado"
+        deleting={modalDeleting}
       >
         {selectedOpf && (
           <>
@@ -282,7 +331,7 @@ export const Books: React.FC = () => {
                 </div>
                 <div className="modal-field">
                   <span className="modal-field-label"><Calendar size={14} /> Data de Publicação</span>
-                  <span className="modal-field-value">{selectedOpf.datePublished || 'N/A'}</span>
+                  <span className="modal-field-value">{formatDate(selectedOpf.datePublished)}</span>
                 </div>
                 <div className="modal-field">
                   <span className="modal-field-label"><Globe size={14} /> Idioma</span>

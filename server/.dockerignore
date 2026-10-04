@@ -1,0 +1,14 @@
+target
+src/main/resources/application.yml
+*.log
+*.log.*
+.git
+.gitignore
+.idea
+.vscode
+.mvn
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
