@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 
@@ -11,6 +12,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: port,
       strictPort: true
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.ts',
+      pool: 'forks',
+      forks: {
+        singleFork: true
+      }
     }
   }
 })
