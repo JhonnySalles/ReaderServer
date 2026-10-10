@@ -1,11 +1,11 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Instala dependências aproveitando cache
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --ignore-engines
 
 # Copia código fonte (respeitando .dockerignore que ignora .env)
 COPY . .
