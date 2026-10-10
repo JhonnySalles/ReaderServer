@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Banco de Dados PostgreSQL
@@ -25,18 +25,28 @@ services:
     depends_on:
       - postgres
     environment:
+      # Conexão com o PostgreSQL existente via host
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/readerserver
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+
+      # Gravação de logs no diretório do volume montado
+      LOG_FILE: /app/logs/server.log
+      LOGGING_FILE_NAME: /app/logs/server.log
+
+      # Configurações do servidor e JVM
       PORT: 8083
-      DB_URL: jdbc:postgresql://postgres:5432/readerserver
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
-      CORS_ALLOWED_ORIGINS: "http://localhost:5179,http://localhost:80,http://localhost:3000,http://readerserver.local"
-      JWT_SECRET_KEY: "minha_chave_secreta_super_segura"
-      JWT_EXPIRE_LENGTH: 86400000
-      MDNS_DISCOVERY_ENABLED: "true"
-      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC"
-    # Opcional: montar application.yml customizado externamente
-    # volumes:
-    #   - ./server-config/application.yml:/app/config/application.yml
+      JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseG1GC"
+
+      # CORS e Segurança
+      CORS_ORIGINPATTERNS: "http://localhost:5179,http://localhost:8083"
+      SECURITY_JWT_TOKEN_SECRET_KEY: "minha_chave_secreta_super_segura"
+      SECURITY_JWT_TOKEN_EXPIRE_LENGTH: 86400000
+      DESCOBERTALOCAL: "true"
+    volumes:
+      # No Windows: mapeia para a pasta local ./logs
+      # No Raspberry Pi: altere para /logs/readerserver:/app/logs
+      - ./logs:/app/logs
     ports:
       - "8083:8083"
     networks:

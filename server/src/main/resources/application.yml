@@ -39,5 +39,5 @@ springdoc:
     operations-sorter: alpha
 logging:
   file:
-    name: server.log
+    name: ${LOG_FILE:server.log}
 descobertaLocal: true

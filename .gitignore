@@ -1,2 +1,5 @@
 /scripts/importer/node_modules
 Construindo
+logs/*
+!logs/.gitkeep
+*.log
