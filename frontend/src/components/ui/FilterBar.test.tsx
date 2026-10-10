@@ -1,13 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FilterBar, SearchSuggestion } from './FilterBar';
+import { FilterBar, type SearchSuggestion } from './FilterBar';
 
 describe('FilterBar Component', () => {
-  const mockSuggestions: SearchSuggestion[] = [
-    { command: 'autor', label: 'Autor / Escritor', example: '@autor:Nome', description: 'Filtra por autor' },
-    { command: 'serie', label: 'Série / Obra', example: '@serie:Nome', description: 'Filtra por série' }
-  ];
 
   it('deve renderizar o input de busca e o botão de ordenação', () => {
     render(
