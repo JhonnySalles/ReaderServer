@@ -12,6 +12,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import br.com.fenix.readerserver.config.ModelMapperConfig
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.modelmapper.ModelMapper
@@ -28,7 +29,7 @@ class MangaServiceTest {
     fun setUp() {
         mangaRepository = mockk()
         dataFileRepository = mockk()
-        modelMapper = ModelMapper()
+        modelMapper = ModelMapperConfig().modelMapper()
         mangaService = MangaService(mangaRepository, dataFileRepository, modelMapper)
     }
 

@@ -5,6 +5,7 @@ import br.com.fenix.readerserver.converters.MediaTypes
 import br.com.fenix.readerserver.dto.opf.OpfDto
 import br.com.fenix.readerserver.model.opf.Opf
 import br.com.fenix.readerserver.service.opf.OpfService
+import br.com.fenix.readerserver.util.XmlUtils
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.PageRequest
@@ -38,10 +39,11 @@ class OpfController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "title") sortField: String,
         assembler: PagedResourcesAssembler<OpfDto>
     ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(opfService.findByTitle(title, pageable, assembler))
     }
 
@@ -59,10 +61,11 @@ class OpfController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "title") sortField: String,
         assembler: PagedResourcesAssembler<OpfDto>
     ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "creator"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(opfService.findByCreator(creator, pageable, assembler))
     }
 
@@ -80,10 +83,11 @@ class OpfController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "volume") sortField: String,
         assembler: PagedResourcesAssembler<OpfDto>
     ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "series"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(opfService.findBySeries(series, pageable, assembler))
     }
 
@@ -133,10 +137,11 @@ class OpfController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "title") sortField: String,
         assembler: PagedResourcesAssembler<OpfDto>
     ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(opfService.searchAdvanced(filter, pageable, assembler))
     }
 
@@ -155,10 +160,11 @@ class OpfController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "title") sortField: String,
         assembler: PagedResourcesAssembler<OpfDto>
     ): ResponseEntity<PagedModel<EntityModel<OpfDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "title"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(opfService.searchAdvanced(filter, pageable, assembler))
     }
 
@@ -179,16 +185,17 @@ class OpfController(
         val content = if (dataFiles.isNotEmpty() && !dataFiles[0].fileContent.isNullOrBlank()) {
             dataFiles[0].fileContent!!
         } else {
+            // Se não houver arquivo bruto persistido, gera o XML básico com escape seguro
             """<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:title>${dto.title}</dc:title>
-    <dc:creator>${dto.creator ?: ""}</dc:creator>
-    <dc:publisher>${dto.publisher ?: ""}</dc:publisher>
-    <dc:language>${dto.language}</dc:language>
-    <dc:date>${dto.datePublished ?: ""}</dc:date>
-    <dc:description>${dto.description ?: ""}</dc:description>
-    <dc:subject>${dto.subjects ?: ""}</dc:subject>
+    <dc:title>${XmlUtils.escapeXml(dto.title)}</dc:title>
+    <dc:creator>${XmlUtils.escapeXml(dto.creator)}</dc:creator>
+    <dc:publisher>${XmlUtils.escapeXml(dto.publisher)}</dc:publisher>
+    <dc:language>${XmlUtils.escapeXml(dto.language)}</dc:language>
+    <dc:date>${XmlUtils.escapeXml(dto.datePublished)}</dc:date>
+    <dc:description>${XmlUtils.escapeXml(dto.description)}</dc:description>
+    <dc:subject>${XmlUtils.escapeXml(dto.subjects)}</dc:subject>
   </metadata>
 </package>"""
         }

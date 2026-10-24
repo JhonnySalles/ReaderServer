@@ -2,6 +2,7 @@ package br.com.fenix.readerserver.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,12 +14,16 @@ import java.time.LocalDateTime
 @RequestMapping("/health")
 class HealthCheckController {
 
+    @Value("\${api.version:1.0.0}")
+    private val apiVersion: String = "1.0.0"
+
     @Operation(summary = "Health check", description = "Verifica se a API está online e respondendo adequadamente.")
     @GetMapping
     fun healthCheck(): ResponseEntity<Map<String, Any>> {
         val status = mapOf(
             "status" to "UP",
             "service" to "ReaderServer API",
+            "version" to apiVersion,
             "timestamp" to LocalDateTime.now().toString()
         )
         return ResponseEntity.ok(status)

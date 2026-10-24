@@ -4,7 +4,7 @@ security:
   jwt:
     token:
       secret-key: 53cr37
-      expire-length: 3600000
+      expire-length: 86400000 # 24h (24 * 60 * 60 * 1000)
 spring:
   application:
     name: ReaderServer
@@ -41,3 +41,8 @@ logging:
   file:
     name: ${LOG_FILE:server.log}
 descobertaLocal: true
+mdns:
+  host-address: ${MDNS_HOST_ADDRESS:}
+  service-type: ${MDNS_SERVICE_TYPE:_readerserver._tcp.local.}
+api:
+  version: 1.0.0

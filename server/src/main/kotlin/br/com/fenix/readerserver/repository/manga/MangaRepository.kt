@@ -28,6 +28,10 @@ interface MangaRepository : JpaRepository<Manga, UUID?>, JpaSpecificationExecuto
     fun findByFileName(@Param("fileName") fileName: String, pageable: Pageable): Page<Manga>
 
     @EntityGraph(attributePaths = ["comicInfo"])
+    @Query("SELECT m FROM Manga m WHERE LOWER(m.serie) LIKE LOWER(CONCAT('%', :serie, '%'))")
+    fun findBySerie(@Param("serie") serie: String, pageable: Pageable): Page<Manga>
+
+    @EntityGraph(attributePaths = ["comicInfo"])
     @Query("SELECT m FROM Manga m WHERE m.comicInfoId = :comicInfoId")
     fun findByComicInfoId(@Param("comicInfoId") comicInfoId: UUID): List<Manga>
 

@@ -4,6 +4,7 @@ import br.com.fenix.readerserver.dto.book.BookDto
 import br.com.fenix.readerserver.dto.manga.MangaDto
 import br.com.fenix.readerserver.model.book.Book
 import br.com.fenix.readerserver.model.manga.Manga
+import br.com.fenix.readerserver.config.ModelMapperConfig
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -18,7 +19,7 @@ class MapperTest {
 
     @BeforeEach
     fun setUp() {
-        mapper = Mapper(ModelMapper())
+        mapper = Mapper(ModelMapperConfig().modelMapper())
     }
 
     @Test

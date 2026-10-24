@@ -7,7 +7,7 @@ security:
   jwt:
     token:
       secret-key: ${JWT_SECRET_KEY:53cr37}
-      expire-length: ${JWT_EXPIRE_LENGTH:3600000}
+      expire-length: ${JWT_EXPIRE_LENGTH:86400000} # 24h
 
 spring:
   application:
@@ -49,3 +49,8 @@ logging:
     name: /app/logs/server.log
 
 descobertaLocal: ${MDNS_DISCOVERY_ENABLED:true}
+mdns:
+  host-address: ${MDNS_HOST_ADDRESS:}
+  service-type: ${MDNS_SERVICE_TYPE:_readerserver._tcp.local.}
+api:
+  version: ${API_VERSION:1.0.0}

@@ -22,6 +22,143 @@ const API_USERNAME = process.env.API_USERNAME || 'admin';
 const API_PASSWORD = process.env.API_PASSWORD || 'admin';
 const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
+// Gerenciamento e renovação automática de Token JWT
+let currentAccessToken = null;
+let currentRefreshToken = null;
+let tokenExpiresAt = null;
+let isRefreshingPromise = null;
+
+function setTokens(tokenData) {
+  if (tokenData.accessToken) {
+    currentAccessToken = tokenData.accessToken;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${currentAccessToken}`;
+  }
+  if (tokenData.refreshToken) {
+    currentRefreshToken = tokenData.refreshToken;
+  }
+  if (tokenData.expiration) {
+    tokenExpiresAt = new Date(tokenData.expiration).getTime();
+  } else if (currentAccessToken) {
+    try {
+      const payloadBase64 = currentAccessToken.split('.')[1];
+      const decodedJson = JSON.parse(Buffer.from(payloadBase64, 'base64').toString('utf8'));
+      if (decodedJson.exp) {
+        tokenExpiresAt = decodedJson.exp * 1000;
+      }
+    } catch (e) {
+      tokenExpiresAt = Date.now() + 5 * 3600 * 1000;
+    }
+  }
+}
+
+async function refreshAuthToken() {
+  if (isRefreshingPromise) {
+    return isRefreshingPromise;
+  }
+
+  isRefreshingPromise = (async () => {
+    try {
+      // 1. Tenta renovar via PUT /auth/refresh/{username} com o refresh token
+      if (currentRefreshToken) {
+        try {
+          const refreshUrl = `${SERVER_URL}/auth/refresh/${encodeURIComponent(API_USERNAME)}`;
+          const refreshRes = await axios.put(
+            refreshUrl,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${currentRefreshToken}`,
+              },
+              timeout: 10000,
+            }
+          );
+
+          if (refreshRes.data && refreshRes.data.accessToken) {
+            setTokens(refreshRes.data);
+            return currentAccessToken;
+          }
+        } catch (err) {
+          // Se o refresh falhar (expirado ou inválido), prossegue para login direto
+        }
+      }
+
+      // 2. Fallback: Re-autentica via POST /auth/signin
+      const signinRes = await axios.post(
+        `${SERVER_URL}/auth/signin`,
+        {
+          username: API_USERNAME,
+          password: API_PASSWORD,
+        },
+        { timeout: 10000 }
+      );
+
+      if (signinRes.data && signinRes.data.accessToken) {
+        setTokens(signinRes.data);
+        return currentAccessToken;
+      }
+
+      throw new Error('Falha ao renovar token: resposta de autenticação inválida.');
+    } finally {
+      isRefreshingPromise = null;
+    }
+  })();
+
+  return isRefreshingPromise;
+}
+
+// Configurar Interceptors no Axios
+axios.interceptors.request.use(
+  async (config) => {
+    const url = config.url || '';
+    const isAuthRequest = url.includes('/auth/signin') || url.includes('/auth/refresh');
+
+    // Renova preventivamente se faltar menos de 60 segundos para expirar
+    if (!isAuthRequest && tokenExpiresAt && Date.now() >= tokenExpiresAt - 60000) {
+      try {
+        await refreshAuthToken();
+      } catch (err) {
+        // Tenta continuar com o token atual caso a renovação antecipada falhe
+      }
+    }
+
+    if (currentAccessToken && !isAuthRequest) {
+      config.headers = config.headers || {};
+      config.headers['Authorization'] = `Bearer ${currentAccessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const url = originalRequest?.url || '';
+    const isAuthRequest = url.includes('/auth/signin') || url.includes('/auth/refresh');
+
+    if (
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthRequest &&
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      originalRequest._retry = true;
+      try {
+        const newToken = await refreshAuthToken();
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return axios(originalRequest);
+      } catch (refreshErr) {
+        return Promise.reject(refreshErr);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '@_',
@@ -342,7 +479,7 @@ async function findExistingFile(type, fileName) {
     const endpoint = `${API_BASE_URL}/${type}/search/file-name`;
     const res = await axios.get(endpoint, {
       params: { fileName, size: 1 },
-      validateStatus: (status) => status < 500,
+      validateStatus: (status) => (status >= 200 && status < 300) || status === 404,
     });
 
     if (res.status === 200 && res.data) {
@@ -577,10 +714,10 @@ async function main() {
     const authRes = await axios.post(`${SERVER_URL}/auth/signin`, {
       username: API_USERNAME,
       password: API_PASSWORD
-    }, { timeout: 5000 });
+    }, { timeout: 10000 });
 
     if (authRes.data && authRes.data.accessToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${authRes.data.accessToken}`;
+      setTokens(authRes.data);
       console.log(chalk.green(`[OK] Autenticado com sucesso.\n`));
     } else {
       console.log(chalk.red(`[ERRO] Falha ao autenticar: Token não retornado.`));

@@ -16,7 +16,10 @@ import javax.jmdns.ServiceInfo
 @ConditionalOnProperty(name = ["descobertaLocal"], havingValue = "true")
 class LocalDiscoveryService(
     @Value("\${server.port}") private val port: Int,
-    @Value("\${spring.application.name}") private val appName: String
+    @Value("\${spring.application.name}") private val appName: String,
+    @Value("\${mdns.host-address:}") private val hostAddress: String,
+    @Value("\${mdns.service-type:_readerserver._tcp.local.}") private val serviceType: String,
+    @Value("\${api.version:1.0.0}") private val apiVersion: String
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     private val oLog: Logger = LoggerFactory.getLogger(LocalDiscoveryService::class.java)
@@ -25,11 +28,23 @@ class LocalDiscoveryService(
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
         try {
             oLog.info("--> Condição de descoberta local ATIVADA. Registrando serviço mDNS...")
-            jmdns = JmDNS.create(InetAddress.getLocalHost())
-            val serviceInfo = ServiceInfo.create("_http._tcp.local.", appName, port, "ReaderServer API")
+            val bindAddress = if (hostAddress.isNotBlank()) {
+                oLog.info("--> Usando endereço de anúncio mDNS configurado: $hostAddress")
+                InetAddress.getByName(hostAddress.trim())
+            } else {
+                InetAddress.getLocalHost()
+            }
+            jmdns = JmDNS.create(bindAddress)
+
+            val props = mapOf(
+                "version" to apiVersion,
+                "path" to "/api",
+                "name" to appName
+            )
+            val serviceInfo = ServiceInfo.create(serviceType, appName, port, 0, 0, props)
 
             jmdns?.registerService(serviceInfo)
-            oLog.info("--> Serviço '$appName' anunciado na rede local na porta $port.")
+            oLog.info("--> Serviço '$appName' ($serviceType) anunciado na rede local em ${bindAddress.hostAddress}:$port.")
         } catch (e: Exception) {
             oLog.error("!!! Falha ao registrar o serviço de descoberta mDNS.", e)
         }

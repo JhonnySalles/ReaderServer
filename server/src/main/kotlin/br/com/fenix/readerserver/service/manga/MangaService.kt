@@ -62,6 +62,13 @@ class MangaService(
     }
 
     @Transactional(readOnly = true)
+    fun findBySerie(serie: String, pageable: Pageable, assembler: PagedResourcesAssembler<MangaDto>): PagedModel<EntityModel<MangaDto>> {
+        val page: Page<Manga> = mangaRepository.findBySerie(serie, pageable)
+        val dtoPage: Page<MangaDto> = page.map { mapper.parse(it, MangaDto::class.java) }
+        return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
     fun findSingleByFileName(fileName: String): MangaDto {
         val entity = mangaRepository.findByFileNameExact(fileName).orElseThrow {
             InvalidNotFoundException("No records found for fileName: $fileName")

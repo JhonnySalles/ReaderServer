@@ -62,6 +62,13 @@ class BookService(
     }
 
     @Transactional(readOnly = true)
+    fun findBySerie(serie: String, pageable: Pageable, assembler: PagedResourcesAssembler<BookDto>): PagedModel<EntityModel<BookDto>> {
+        val page: Page<Book> = bookRepository.findBySerie(serie, pageable)
+        val dtoPage: Page<BookDto> = page.map { mapper.parse(it, BookDto::class.java) }
+        return assembler.toModel(dtoPage)
+    }
+
+    @Transactional(readOnly = true)
     fun findSingleByFileName(fileName: String): BookDto {
         val entity = bookRepository.findByFileNameExact(fileName).orElseThrow {
             InvalidNotFoundException("No records found for fileName: $fileName")

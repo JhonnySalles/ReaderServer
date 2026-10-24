@@ -5,6 +5,7 @@ import br.com.fenix.readerserver.converters.MediaTypes
 import br.com.fenix.readerserver.dto.manga.MangaDto
 import br.com.fenix.readerserver.model.manga.Manga
 import br.com.fenix.readerserver.service.manga.MangaService
+import br.com.fenix.readerserver.util.XmlUtils
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.PageRequest
@@ -38,10 +39,11 @@ class MangaController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "nome") sortField: String,
         assembler: PagedResourcesAssembler<MangaDto>
     ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "nome"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(mangaService.findByNome(nome, pageable, assembler))
     }
 
@@ -59,10 +61,11 @@ class MangaController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "fileName") sortField: String,
         assembler: PagedResourcesAssembler<MangaDto>
     ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "fileName"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(mangaService.findByFileName(fileName, pageable, assembler))
     }
 
@@ -97,6 +100,28 @@ class MangaController(
         return ResponseEntity.ok(mangaService.findBySerieAndVolume(serie, volume))
     }
 
+    @Operation(summary = "Busca Paginada de Mangas por Série", description = "Retorna página com mangas associados à série informada, ordenados por padrão pelo volume.")
+    @GetMapping(
+        value = ["/search/serie"],
+        produces = [
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+            MediaTypes.MEDIA_TYPE_APPLICATION_YML_VALUE
+        ]
+    )
+    fun findBySerie(
+        @RequestParam("serie") serie: String,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+        @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "volume") sortField: String,
+        assembler: PagedResourcesAssembler<MangaDto>
+    ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
+        val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
+        return ResponseEntity.ok(mangaService.findBySerie(serie, pageable, assembler))
+    }
+
     @Operation(summary = "Busca Mangas por ComicInfo ID", description = "Retorna lista de mangas associados a um ComicInfo.")
     @GetMapping(
         value = ["/comicinfo/{comicInfoId}"],
@@ -126,10 +151,11 @@ class MangaController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "volume") sortField: String,
         assembler: PagedResourcesAssembler<MangaDto>
     ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "id"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(mangaService.findByComicInfoIdPaged(comicInfoId, pageable, assembler))
     }
 
@@ -147,10 +173,11 @@ class MangaController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "nome") sortField: String,
         assembler: PagedResourcesAssembler<MangaDto>
     ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "nome"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(mangaService.searchAdvanced(filter, pageable, assembler))
     }
 
@@ -169,10 +196,11 @@ class MangaController(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
         @RequestParam(value = "direction", defaultValue = "asc") direction: String,
+        @RequestParam(value = "sortField", defaultValue = "nome") sortField: String,
         assembler: PagedResourcesAssembler<MangaDto>
     ): ResponseEntity<PagedModel<EntityModel<MangaDto>>> {
         val sort = if ("desc".equals(direction, ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
-        val pageable = PageRequest.of(page, size, Sort.by(sort, "nome"))
+        val pageable = PageRequest.of(page, size, Sort.by(sort, sortField))
         return ResponseEntity.ok(mangaService.searchAdvanced(filter, pageable, assembler))
     }
 
@@ -199,17 +227,18 @@ class MangaController(
             val ci = mangaDto.comicInfo
             val title = ci?.title ?: mangaDto.nome ?: ""
             val series = ci?.series ?: mangaDto.serie ?: ""
+            // Se não houver arquivo bruto persistido, gera o XML básico com escape seguro
             """<?xml version="1.0" encoding="utf-8"?>
 <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Title>$title</Title>
-  <Series>$series</Series>
+  <Title>${XmlUtils.escapeXml(title)}</Title>
+  <Series>${XmlUtils.escapeXml(series)}</Series>
   <Number>${ci?.number ?: 0}</Number>
   <Volume>${ci?.volume ?: 0}</Volume>
-  <Writer>${ci?.writer ?: ""}</Writer>
-  <Publisher>${ci?.publisher ?: ""}</Publisher>
-  <Genre>${ci?.genre ?: ""}</Genre>
-  <LanguageISO>${ci?.languageISO ?: "pt"}</LanguageISO>
-  <Summary>${ci?.summary ?: ""}</Summary>
+  <Writer>${XmlUtils.escapeXml(ci?.writer)}</Writer>
+  <Publisher>${XmlUtils.escapeXml(ci?.publisher)}</Publisher>
+  <Genre>${XmlUtils.escapeXml(ci?.genre)}</Genre>
+  <LanguageISO>${XmlUtils.escapeXml(ci?.languageISO ?: "pt")}</LanguageISO>
+  <Summary>${XmlUtils.escapeXml(ci?.summary)}</Summary>
 </ComicInfo>"""
         }
         val cleanName = (mangaDto.nome ?: mangaDto.fileName ?: "ComicInfo")

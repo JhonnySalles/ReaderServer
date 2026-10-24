@@ -28,6 +28,10 @@ interface BookRepository : JpaRepository<Book, UUID?>, JpaSpecificationExecutor<
     fun findByFileName(@Param("fileName") fileName: String, pageable: Pageable): Page<Book>
 
     @EntityGraph(attributePaths = ["opf"])
+    @Query("SELECT b FROM Book b WHERE LOWER(b.serie) LIKE LOWER(CONCAT('%', :serie, '%'))")
+    fun findBySerie(@Param("serie") serie: String, pageable: Pageable): Page<Book>
+
+    @EntityGraph(attributePaths = ["opf"])
     @Query("SELECT b FROM Book b WHERE b.opfId = :opfId")
     fun findByOpfId(@Param("opfId") opfId: UUID): List<Book>
 
