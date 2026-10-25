@@ -30,10 +30,6 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
 
-      # Gravação de logs no diretório do volume montado
-      LOG_FILE: /app/logs/server.log
-      LOGGING_FILE_NAME: /app/logs/server.log
-
       # Configurações do servidor e JVM
       PORT: 8083
       JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseG1GC"
@@ -43,10 +39,6 @@ services:
       SECURITY_JWT_TOKEN_SECRET_KEY: "minha_chave_secreta_super_segura"
       SECURITY_JWT_TOKEN_EXPIRE_LENGTH: 86400000
       DESCOBERTALOCAL: "true"
-    volumes:
-      # No Windows: mapeia para a pasta local ./logs
-      # No Raspberry Pi: altere para /logs/readerserver:/app/logs
-      - ./logs:/app/logs
     ports:
       - "8083:8083"
     networks:
