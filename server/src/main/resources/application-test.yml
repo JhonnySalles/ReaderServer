@@ -29,5 +29,5 @@ springdoc:
     - /api/**
 logging:
   file:
-    name: server-test.log
+    name: ../logs/server-test.log
 descobertaLocal: false

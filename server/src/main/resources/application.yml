@@ -39,7 +39,7 @@ springdoc:
     operations-sorter: alpha
 logging:
   file:
-    name: ${LOG_FILE:server.log}
+    name: ${LOG_FILE:../logs/server.log}
 descobertaLocal: true
 mdns:
   host-address: ${MDNS_HOST_ADDRESS:}

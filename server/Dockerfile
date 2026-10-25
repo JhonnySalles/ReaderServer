@@ -16,8 +16,8 @@ FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-# Cria usuário não-root para execução segura
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+# Cria usuário não-root com UID/GID 1000 (padrão em distribuições Linux como Raspberry Pi OS)
+RUN groupadd -g 1000 appgroup && useradd -u 1000 -r -g appgroup appuser
 RUN mkdir -p /app/logs /app/config && chown -R appuser:appgroup /app
 
 USER appuser
