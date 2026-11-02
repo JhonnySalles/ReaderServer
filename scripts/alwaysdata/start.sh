@@ -32,8 +32,11 @@ echo " - Binding: $APP_IP:$APP_PORT"
 echo " - Log: $APP_LOG_FILE"
 echo "=========================================================="
 
-# Ajuste otimizado de memória JVM para Alwaysdata (Serial GC reduz overhead de RAM)
-JAVA_OPTS="${JAVA_OPTS:--Xms64m -Xmx256m -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom}"
+# Ajuste otimizado de memória JVM e startup rápido para Alwaysdata:
+# - TieredStopAtLevel=1: acelera o startup de ~45s para ~10s evitando o timeout do Alwaysdata
+# - SerialGC, MaxMetaspace e ReservedCodeCache: evitam que o processo seja morto por OOM Killer
+DEFAULT_OPTS="-Xms32m -Xmx128m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -Xss256k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.security.egd=file:/dev/./urandom"
+JAVA_OPTS="${JAVA_OPTS:-$DEFAULT_OPTS}"
 
 exec java $JAVA_OPTS \
     -Dserver.port="$APP_PORT" \
