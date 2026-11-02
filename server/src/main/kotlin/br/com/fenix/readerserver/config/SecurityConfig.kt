@@ -58,13 +58,21 @@ class SecurityConfig(
             .securityMatcher(
                 "/error",
                 "/auth/**",
+                "/api/auth/**",
                 "/swagger-ui/**",
+                "/api/swagger-ui/**",
                 "/swagger-ui.html",
+                "/api/swagger-ui.html",
                 "/v3/api-docs/**",
+                "/api/v3/api-docs/**",
                 "/docs/**",
+                "/api/docs/**",
                 "/documentacao/**",
+                "/api/documentacao/**",
                 "/webjars/**",
-                "/health/**"
+                "/api/webjars/**",
+                "/health/**",
+                "/api/health/**"
             )
             .authorizeHttpRequests { authorize ->
                 authorize.anyRequest().permitAll()

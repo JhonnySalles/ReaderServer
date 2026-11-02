@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 @Tag(name = "Health Check", description = "Endpoint para verificação do status da API")
 @RestController
-@RequestMapping("/health")
+@RequestMapping(value = ["/health", "/api/health"])
 class HealthCheckController {
 
     @Value("\${api.version:1.0.0}")

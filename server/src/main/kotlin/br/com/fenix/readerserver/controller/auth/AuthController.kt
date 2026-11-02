@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Authentication Endpoint", description = "Endpoints para autenticação e renovação de tokens JWT")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(value = ["/auth", "/api/auth"])
 class AuthController {
 
     @Autowired

@@ -6,8 +6,10 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const port = Number(env.PORT) || 5173
+  const basePath = env.VITE_BASE_PATH || '/readerserver/'
 
   return {
+    base: basePath,
     plugins: [react()],
     server: {
       port: port,

@@ -16,6 +16,11 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/readerserver}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 10000
+      initialization-fail-timeout: 10000
   jpa:
     open-in-view: false
     hibernate:
@@ -35,7 +40,7 @@ server:
   address: ${IP:0.0.0.0}
   forward-headers-strategy: framework
   servlet:
-    context-path: ${SERVER_CONTEXT_PATH:/ReaderServer}
+    context-path: ${SERVER_CONTEXT_PATH:/readerserver}
 
 springdoc:
   pathsToMatch:

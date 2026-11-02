@@ -78,19 +78,14 @@ A API do ReaderServer pode ser hospedada centralizadamente na nuvem Alwaysdata a
 1. No painel do Alwaysdata, acesse **Bancos de dados > PostgreSQL**.
 2. Crie uma nova base de dados (ex: `suaconta_readerserver`) e um usuário com permissões.
 
-### 2. Compilar o Servidor
-Execute o script local para gerar o Fat JAR otimizado:
+### 2. Compilar o Projeto (API Backend + Site Frontend)
+Execute o script único de compilação:
 ```bash
 scripts\alwaysdata\build.bat
 ```
-O arquivo `ReaderServer-0.0.1-SNAPSHOT.jar` será gerado em `server/target/`.
+* **Backend:** O arquivo `ReaderServer-0.0.1-SNAPSHOT.jar` será gerado em `server/target/`.
+* **Frontend:** Os arquivos estáticos e o `.htaccess` serão gerados em `frontend/dist/`.
 
-### 3. Compilar o Site (Frontend React)
-Para compilar a interface web:
-```bash
-scripts\alwaysdata\build-frontend.bat
-```
-Os arquivos estáticos otimizados serão gerados em `frontend/dist/`.
 
 ### 4. Enviar os Arquivos para o Alwaysdata
 Conecte-se via SFTP ou SSH ao Alwaysdata e configure as pastas:
@@ -98,28 +93,28 @@ Conecte-se via SFTP ou SSH ao Alwaysdata e configure as pastas:
 - **API**: Crie o diretório `/home/suaconta/readerserver/`:
   - Envie o arquivo `ReaderServer-*.jar`.
   - Envie o script `scripts/alwaysdata/start.sh` e dê permissão: `chmod +x start.sh`.
-- **Site**: Crie o diretório `/home/suaconta/readersite/` e envie o conteúdo da pasta `frontend/dist/`.
+- **Site**: Crie ou utilize o diretório `/home/suaconta/www/readerserver/` e envie o conteúdo da pasta `frontend/dist/`.
 
 ### 5. Configurar no Painel Alwaysdata
 
-#### A. Site da API (Programa do Usuário)
+#### A. Site da Aplicação Web (Frontend na pasta www)
+Se a sua conta Alwaysdata já possui o site padrão apontando para o diretório raiz `/home/suaconta/www/`, **nenhuma configuração adicional é necessária**! Ao enviar os arquivos para `/home/suaconta/www/readerserver/`, o site já responderá automaticamente em `https://suaconta.alwaysdata.net/readerserver/`.
+
+*(Caso crie um site específico para o caminho `/readerserver`: defina o tipo como **Arquivos estáticos** com diretório raiz `/home/suaconta/www/readerserver`).*
+
+#### B. Site da API (Programa do Usuário em /readerserver/api)
 1. Acesse **Web > Sites > Adicionar um site**.
-2. Defina o endereço (ex: `api.seudominio.net` ou `readerserver.alwaysdata.net`).
-3. Selecione o tipo: **Programa do usuário** (*User program*).
-4. No campo **Comando**: `/home/suaconta/readerserver/start.sh`
-5. No campo **Diretório de trabalho**: `/home/suaconta/readerserver`
-6. Em **Variáveis de ambiente**:
+2. Defina o endereço compartilhado (ex: `suaconta.alwaysdata.net`).
+3. No campo **Caminho (Path)**: `/readerserver/api`
+4. Selecione o tipo: **Programa do usuário** (*User program*).
+5. No campo **Comando**: `/home/suaconta/readerserver/start.sh`
+6. No campo **Diretório de trabalho**: `/home/suaconta/readerserver`
+7. Em **Variáveis de ambiente**:
    - `SPRING_DATASOURCE_URL`: `jdbc:postgresql://postgresql-suaconta.alwaysdata.net/suaconta_readerserver`
    - `SPRING_DATASOURCE_USERNAME`: seu usuário do PostgreSQL no Alwaysdata
    - `SPRING_DATASOURCE_PASSWORD`: sua senha do PostgreSQL no Alwaysdata
    - `JWT_SECRET_KEY`: sua chave secreta forte para os tokens JWT
-   - `CORS_ALLOWED_ORIGINS`: origens permitidas (ex: `https://seudominio.net`)
-
-#### B. Site da Aplicação Web (Arquivos Estáticos)
-1. Acesse **Web > Sites > Adicionar um site**.
-2. Defina o endereço (ex: `seudominio.net`).
-3. Selecione o tipo: **Arquivos estáticos** (*Static files*).
-4. No campo **Diretório raiz**: `/home/suaconta/readersite`
+   - `CORS_ALLOWED_ORIGINS`: origens permitidas (ex: `*`)
 
 ---
 
