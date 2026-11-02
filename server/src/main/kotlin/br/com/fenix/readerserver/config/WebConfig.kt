@@ -12,20 +12,25 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class WebConfig : WebMvcConfigurer {
-
-    @Value("\${cors.originPatterns:default}")
-    private val corsOriginPatterns = ""
+class WebConfig(
+    @Value("\${cors.originPatterns:http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174,http://localhost:5179}")
+    private val corsOriginPatterns: String
+) : WebMvcConfigurer {
 
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         converters.add(YamlJackson2HttpMesageConverter())
     }
 
     override fun addCorsMappings(registry: CorsRegistry) {
-        val allowedOrigins = corsOriginPatterns.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val allowedOrigins = corsOriginPatterns
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .toTypedArray()
+
         registry.addMapping("/**")
             .allowedMethods("*")
-            .allowedOrigins(*allowedOrigins)
+            .allowedOriginPatterns(*allowedOrigins)
             .exposedHeaders("Content-Disposition")
             .allowCredentials(true)
     }

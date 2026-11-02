@@ -68,6 +68,48 @@ Para importar mangas, quadrinhos e livros escaneando pastas e subpastas locais:
    ```
 4. Siga o assistente interativo selecionando o tipo de mídia (Mangá / Livro) e informando o caminho do diretório.
 
+---
+
+## ☁️ Hospedagem no Alwaysdata (Deploy em Produção)
+
+A API do ReaderServer pode ser hospedada centralizadamente na nuvem Alwaysdata através do recurso **Programa do Usuário** (*User program*).
+
+### 1. Criar o Banco PostgreSQL
+1. No painel do Alwaysdata, acesse **Bancos de dados > PostgreSQL**.
+2. Crie uma nova base de dados (ex: `suaconta_readerserver`) e um usuário com permissões.
+
+### 2. Compilar o Servidor
+Execute o script local para gerar o Fat JAR otimizado:
+```bash
+scripts\alwaysdata\build.bat
+```
+O arquivo `ReaderServer-0.0.1-SNAPSHOT.jar` será gerado em `server/target/`.
+
+### 3. Enviar os Arquivos para o Alwaysdata
+Conecte-se via SFTP ou SSH ao Alwaysdata e crie um diretório para o app (ex: `/home/suaconta/readerserver/`):
+- Envie o arquivo `.jar` gerado.
+- Envie o script `scripts/alwaysdata/start.sh` e dê permissão de execução: `chmod +x start.sh`.
+
+### 4. Configurar o Site no Painel Alwaysdata
+1. Acesse **Web > Sites > Adicionar um site**.
+2. Defina o endereço (ex: `readerserver.alwaysdata.net` ou domínio próprio).
+3. Selecione o tipo: **Programa do usuário** (*User program*).
+4. No campo **Comando**, defina:
+   ```bash
+   /home/suaconta/readerserver/start.sh
+   ```
+5. No campo **Diretório de trabalho**, defina:
+   ```bash
+   /home/suaconta/readerserver
+   ```
+6. Em **Variáveis de ambiente**, adicione:
+   - `SPRING_DATASOURCE_URL`: `jdbc:postgresql://postgresql-suaconta.alwaysdata.net/suaconta_readerserver`
+   - `SPRING_DATASOURCE_USERNAME`: seu usuário do PostgreSQL no Alwaysdata
+   - `SPRING_DATASOURCE_PASSWORD`: sua senha do PostgreSQL no Alwaysdata
+   - `JWT_SECRET_KEY`: sua chave secreta forte para os tokens JWT
+   - `CORS_ALLOWED_ORIGINS`: origens permitidas ou `*`
+7. Salve. O Alwaysdata iniciará o processo e atribuirá automaticamente as portas e o proxy reverso HTTPS com certificado SSL Let's Encrypt.
+
 
 ## 📦 Estrutura de Diretórios
 * `server/src/main/kotlin/.../readerserver/controller`: Controladores da API.

@@ -30,4 +30,3 @@ springdoc:
 logging:
   file:
     name: ../logs/server-test.log
-descobertaLocal: false

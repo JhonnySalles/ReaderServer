@@ -33,6 +33,8 @@ spring:
 
 server:
   port: ${PORT:8083}
+  address: ${IP:0.0.0.0}
+  forward-headers-strategy: framework
 
 springdoc:
   pathsToMatch:
@@ -46,11 +48,7 @@ springdoc:
 
 logging:
   file:
-    name: /app/logs/server.log
+    name: ${LOG_FILE:/app/logs/server.log}
 
-descobertaLocal: ${MDNS_DISCOVERY_ENABLED:true}
-mdns:
-  host-address: ${MDNS_HOST_ADDRESS:}
-  service-type: ${MDNS_SERVICE_TYPE:_readerserver._tcp.local.}
 api:
   version: ${API_VERSION:1.0.0}
