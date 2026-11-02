@@ -43,6 +43,11 @@ springdoc:
     operations-sorter: alpha
 logging:
   file:
-    name: ${LOG_FILE:../logs/server.log}
+    name: ${LOG_FILE:logs/server.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
 api:
   version: 1.0.0

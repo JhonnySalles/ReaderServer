@@ -85,30 +85,58 @@ scripts\alwaysdata\build.bat
 ```
 O arquivo `ReaderServer-0.0.1-SNAPSHOT.jar` será gerado em `server/target/`.
 
-### 3. Enviar os Arquivos para o Alwaysdata
-Conecte-se via SFTP ou SSH ao Alwaysdata e crie um diretório para o app (ex: `/home/suaconta/readerserver/`):
-- Envie o arquivo `.jar` gerado.
-- Envie o script `scripts/alwaysdata/start.sh` e dê permissão de execução: `chmod +x start.sh`.
+### 3. Compilar o Site (Frontend React)
+Para compilar a interface web:
+```bash
+scripts\alwaysdata\build-frontend.bat
+```
+Os arquivos estáticos otimizados serão gerados em `frontend/dist/`.
 
-### 4. Configurar o Site no Painel Alwaysdata
+### 4. Enviar os Arquivos para o Alwaysdata
+Conecte-se via SFTP ou SSH ao Alwaysdata e configure as pastas:
+
+- **API**: Crie o diretório `/home/suaconta/readerserver/`:
+  - Envie o arquivo `ReaderServer-*.jar`.
+  - Envie o script `scripts/alwaysdata/start.sh` e dê permissão: `chmod +x start.sh`.
+- **Site**: Crie o diretório `/home/suaconta/readersite/` e envie o conteúdo da pasta `frontend/dist/`.
+
+### 5. Configurar no Painel Alwaysdata
+
+#### A. Site da API (Programa do Usuário)
 1. Acesse **Web > Sites > Adicionar um site**.
-2. Defina o endereço (ex: `readerserver.alwaysdata.net` ou domínio próprio).
+2. Defina o endereço (ex: `api.seudominio.net` ou `readerserver.alwaysdata.net`).
 3. Selecione o tipo: **Programa do usuário** (*User program*).
-4. No campo **Comando**, defina:
-   ```bash
-   /home/suaconta/readerserver/start.sh
-   ```
-5. No campo **Diretório de trabalho**, defina:
-   ```bash
-   /home/suaconta/readerserver
-   ```
-6. Em **Variáveis de ambiente**, adicione:
+4. No campo **Comando**: `/home/suaconta/readerserver/start.sh`
+5. No campo **Diretório de trabalho**: `/home/suaconta/readerserver`
+6. Em **Variáveis de ambiente**:
    - `SPRING_DATASOURCE_URL`: `jdbc:postgresql://postgresql-suaconta.alwaysdata.net/suaconta_readerserver`
    - `SPRING_DATASOURCE_USERNAME`: seu usuário do PostgreSQL no Alwaysdata
    - `SPRING_DATASOURCE_PASSWORD`: sua senha do PostgreSQL no Alwaysdata
    - `JWT_SECRET_KEY`: sua chave secreta forte para os tokens JWT
-   - `CORS_ALLOWED_ORIGINS`: origens permitidas ou `*`
-7. Salve. O Alwaysdata iniciará o processo e atribuirá automaticamente as portas e o proxy reverso HTTPS com certificado SSL Let's Encrypt.
+   - `CORS_ALLOWED_ORIGINS`: origens permitidas (ex: `https://seudominio.net`)
+
+#### B. Site da Aplicação Web (Arquivos Estáticos)
+1. Acesse **Web > Sites > Adicionar um site**.
+2. Defina o endereço (ex: `seudominio.net`).
+3. Selecione o tipo: **Arquivos estáticos** (*Static files*).
+4. No campo **Diretório raiz**: `/home/suaconta/readersite`
+
+---
+
+## 📄 Logs no Alwaysdata
+
+Sem utilizar containers Docker, os logs são organizados diretamente no sistema de arquivos do Alwaysdata onde cada aplicação reside:
+
+- **Logs da API (Spring Boot)**:
+  - Arquivo da aplicação: `/home/suaconta/readerserver/logs/server.log` (gerado automaticamente com rotação diária e limite de 10MB por arquivo).
+  - Visualização em tempo real: Acesse via SSH e execute:
+    ```bash
+    tail -f /home/suaconta/readerserver/logs/server.log
+    ```
+- **Logs do Site (Servidor Web Nginx/Apache)**:
+  - Registros de acesso e erros HTTP:
+    `/home/suaconta/admin/logs/sites/[nome-do-site]/`
+  - Também acessíveis diretamente na aba **Logs** do painel do Alwaysdata no respectivo site.
 
 
 ## 📦 Estrutura de Diretórios

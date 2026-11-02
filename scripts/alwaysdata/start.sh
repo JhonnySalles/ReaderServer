@@ -20,10 +20,16 @@ if [ -z "$JAR_FILE" ]; then
     exit 1
 fi
 
+# Garante a criacao do diretorio de logs no local da aplicacao
+LOGS_DIR="$DIR/logs"
+mkdir -p "$LOGS_DIR"
+APP_LOG_FILE="${LOG_FILE:-$LOGS_DIR/server.log}"
+
 echo "=========================================================="
 echo "Iniciando ReaderServer API no Alwaysdata..."
 echo " - JAR: $JAR_FILE"
 echo " - Binding: $APP_IP:$APP_PORT"
+echo " - Log: $APP_LOG_FILE"
 echo "=========================================================="
 
 # Ajuste otimizado de memória JVM para Alwaysdata (Serial GC reduz overhead de RAM)
@@ -32,5 +38,6 @@ JAVA_OPTS="${JAVA_OPTS:--Xms64m -Xmx256m -XX:+UseSerialGC -Djava.security.egd=fi
 exec java $JAVA_OPTS \
     -Dserver.port="$APP_PORT" \
     -Dserver.address="$APP_IP" \
+    -Dlogging.file.name="$APP_LOG_FILE" \
     -jar "$JAR_FILE" \
     --spring.profiles.active=alwaysdata
