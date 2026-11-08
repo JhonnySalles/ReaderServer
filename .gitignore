@@ -3,3 +3,4 @@ Construindo
 logs/*
 !logs/.gitkeep
 *.log
+scripts/importer/.env

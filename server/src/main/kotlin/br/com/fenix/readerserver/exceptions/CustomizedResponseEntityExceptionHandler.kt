@@ -23,6 +23,20 @@ class CustomizedResponseEntityExceptionHandler : ResponseEntityExceptionHandler(
     @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handleAllExceptions(ex: Exception, request: HttpServletRequest): ResponseEntity<ExceptionResponse> {
+        if (ex.javaClass.simpleName.contains("ClientAbortException") ||
+            ex.cause?.javaClass?.simpleName?.contains("ClientAbortException") == true
+        ) {
+            oLog.debug("Conexão abortada pelo cliente em: {}", request.requestURI)
+            return ResponseEntity(
+                ExceptionResponse(
+                    status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    error = "Client Abort",
+                    message = "Conexão encerrada pelo cliente.",
+                    path = request.requestURI
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
         oLog.error("Internal server error", ex)
         val exceptionResponse = ExceptionResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),

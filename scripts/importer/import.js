@@ -20,7 +20,12 @@ const __dirname = path.dirname(__filename);
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8083/api';
 const API_USERNAME = process.env.API_USERNAME || 'admin';
 const API_PASSWORD = process.env.API_PASSWORD || 'admin';
+const API_KEY = process.env.API_KEY || '';
 const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+
+if (API_KEY) {
+  axios.defaults.headers.common['X-API-KEY'] = API_KEY;
+}
 
 // Gerenciamento e renovação automática de Token JWT
 let currentAccessToken = null;

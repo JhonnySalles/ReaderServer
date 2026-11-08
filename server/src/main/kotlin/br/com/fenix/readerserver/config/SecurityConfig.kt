@@ -1,6 +1,7 @@
 package br.com.fenix.readerserver.config
 
 import br.com.fenix.readerserver.exceptions.FilterExceptionHandler
+import br.com.fenix.readerserver.security.ApiKeyFilter
 import br.com.fenix.readerserver.security.CustomAuthenticationEntryPoint
 import br.com.fenix.readerserver.security.JwtTokenFilter
 import br.com.fenix.readerserver.service.auth.UsuarioService
@@ -24,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig(
     private var userDetailsService: UsuarioService,
     private val tokenFilter: JwtTokenFilter,
+    private val apiKeyFilter: ApiKeyFilter,
     private val customEntryPoint: CustomAuthenticationEntryPoint,
     private val exceptionHandlerFilter: FilterExceptionHandler
 ) {
@@ -59,6 +61,8 @@ class SecurityConfig(
                 "/error",
                 "/auth/**",
                 "/api/auth/**",
+                "/swagger/**",
+                "/api/swagger/**",
                 "/swagger-ui/**",
                 "/api/swagger-ui/**",
                 "/swagger-ui.html",
@@ -81,6 +85,8 @@ class SecurityConfig(
             .csrf { it.disable() }
             .cors { }
             .httpBasic { it.disable() }
+            .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
@@ -104,6 +110,7 @@ class SecurityConfig(
             .cors { }
             .httpBasic { it.disable() }
             .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling {
                 it.authenticationEntryPoint(customEntryPoint)

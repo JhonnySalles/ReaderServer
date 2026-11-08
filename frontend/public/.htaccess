@@ -1,6 +1,10 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /readerserver/
+
+  # Redireciona chamadas do Swagger e documentacao para a API no Alwaysdata
+  RewriteRule ^(swagger.*|v3/api-docs.*|docs.*|documentacao.*)$ /readerserver/api/$1 [R=302,L,QSA]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

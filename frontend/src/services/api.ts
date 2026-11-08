@@ -19,11 +19,12 @@ declare global {
       VITE_API_BASE_URL?: string;
       VITE_API_USERNAME?: string;
       VITE_API_PASSWORD?: string;
+      VITE_API_KEY?: string;
     };
   }
 }
 
-const getEnv = (key: 'VITE_API_BASE_URL' | 'VITE_API_USERNAME' | 'VITE_API_PASSWORD', fallback: string): string => {
+const getEnv = (key: 'VITE_API_BASE_URL' | 'VITE_API_USERNAME' | 'VITE_API_PASSWORD' | 'VITE_API_KEY', fallback: string): string => {
   if (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__ && window.__RUNTIME_CONFIG__[key]) {
     return window.__RUNTIME_CONFIG__[key]!;
   }
@@ -50,6 +51,7 @@ export const authStorage = {
 };
 
 export const getBaseUrl = () => getEnv('VITE_API_BASE_URL', 'http://localhost:8083');
+export const getApiKey = () => getEnv('VITE_API_KEY', '');
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -71,16 +73,22 @@ export async function authenticateAutomatically(): Promise<string | null> {
     try {
       const username = getEnv('VITE_API_USERNAME', 'admin');
       const password = getEnv('VITE_API_PASSWORD', 'admin');
+      const apiKey = getApiKey();
       const baseUrl = getBaseUrl();
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      if (apiKey) {
+        headers['X-API-KEY'] = apiKey;
+      }
 
       const response = await axios.post<AuthTokens>(`${baseUrl}/auth/signin`, {
         username,
         password
       }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+        headers
       });
 
       if (response.data && response.data.accessToken) {
@@ -101,6 +109,11 @@ export async function authenticateAutomatically(): Promise<string | null> {
 
 // Request Interceptor: Garante que o token está presente antes da requisição
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  const apiKey = getApiKey();
+  if (apiKey && config.headers) {
+    config.headers['X-API-KEY'] = apiKey;
+  }
+
   let token = authStorage.getToken();
 
   // Se não temos token em memória e a rota for privada (/api), autentica antes de disparar

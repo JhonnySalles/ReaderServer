@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS seguranca (
+    id BIGSERIAL PRIMARY KEY,
+    api_key TEXT NOT NULL,
+    descricao VARCHAR(255) DEFAULT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_seguranca_api_key ON seguranca (api_key);
+

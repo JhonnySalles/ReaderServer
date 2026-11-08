@@ -116,6 +116,19 @@ Se a sua conta Alwaysdata já possui o site padrão apontando para o diretório 
    - `JWT_SECRET_KEY`: sua chave secreta forte para os tokens JWT
    - `CORS_ALLOWED_ORIGINS`: origens permitidas (ex: `*`)
 
+#### C. Cadastro Manual da API Key no Banco de Dados
+A API utiliza autenticação dupla (JWT + API Key). Conecte-se ao seu PostgreSQL no Alwaysdata e insira ao menos uma chave na tabela `seguranca`:
+```sql
+INSERT INTO seguranca (api_key, descricao, ativo) 
+VALUES ('sua-chave-super-secreta-uuid-ou-hash-longo', 'Chave de Producao Alwaysdata', TRUE);
+```
+Configure a mesma chave no `.env` do frontend (`VITE_API_KEY`) e nos scripts clientes (`API_KEY`).
+
+#### D. Acesso ao Swagger UI
+- **URL direta da API:** `https://suaconta.alwaysdata.net/readerserver/api/swagger-ui.html`
+- **Atalho amigável:** `https://suaconta.alwaysdata.net/readerserver/api/docs`
+- **Redirecionamento automático:** Se acessar `https://suaconta.alwaysdata.net/readerserver/swagger-ui.html`, o `.htaccess` do frontend redirecionará automaticamente para o endpoint correto da API.
+
 ---
 
 ## 📄 Logs no Alwaysdata

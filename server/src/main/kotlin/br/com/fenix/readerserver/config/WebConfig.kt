@@ -46,7 +46,23 @@ class WebConfig(
     }
 
     override fun addViewControllers(registry: ViewControllerRegistry) {
-        registry.addRedirectViewController("/docs", "/swagger-ui/index.html")
-        registry.addRedirectViewController("/documentacao", "/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger-ui", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger-ui/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger-ui", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger-ui/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger-ui.html", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger-ui.html", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/swagger-ui.html", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/swagger-ui.html", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/docs", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/docs/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/docs", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/docs/", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/documentacao", "/api/swagger-ui/index.html")
+        registry.addRedirectViewController("/api/documentacao", "/api/swagger-ui/index.html")
     }
 }
