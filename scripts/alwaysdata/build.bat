@@ -63,11 +63,11 @@ if not exist "node_modules\" (
     )
 )
 
-echo [INFO] Executando build de producao do frontend (caminho /readerserver/)...
+echo [INFO] Executando build de producao do frontend (perfil Alwaysdata /readerserver/)...
 if "!PKG_MGR!"=="yarn" (
-    call yarn build
+    call yarn build:alwaysdata
 ) else (
-    call npm run build
+    call npm run build:alwaysdata
 )
 
 if !errorlevel! neq 0 (

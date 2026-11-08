@@ -114,14 +114,11 @@ Se a sua conta Alwaysdata já possui o site padrão apontando para o diretório 
    - `SPRING_DATASOURCE_USERNAME`: seu usuário do PostgreSQL no Alwaysdata
    - `SPRING_DATASOURCE_PASSWORD`: sua senha do PostgreSQL no Alwaysdata
    - `JWT_SECRET_KEY`: sua chave secreta forte para os tokens JWT
+   - `SECURITY_API_KEY`: sua chave secreta para a API Key (ex: `minha_chave_super_secreta`)
    - `CORS_ALLOWED_ORIGINS`: origens permitidas (ex: `*`)
 
-#### C. Cadastro Manual da API Key no Banco de Dados
-A API utiliza autenticação dupla (JWT + API Key). Conecte-se ao seu PostgreSQL no Alwaysdata e insira ao menos uma chave na tabela `seguranca`:
-```sql
-INSERT INTO seguranca (api_key, descricao, ativo) 
-VALUES ('sua-chave-super-secreta-uuid-ou-hash-longo', 'Chave de Producao Alwaysdata', TRUE);
-```
+#### C. Configuração da API Key
+A API utiliza autenticação dupla (JWT + API Key). A chave de segurança é definida na variável de ambiente `SECURITY_API_KEY` no painel do Alwaysdata (ou no arquivo `application-alwaysdata.yml` sob `security.apikey`).
 Configure a mesma chave no `.env` do frontend (`VITE_API_KEY`) e nos scripts clientes (`API_KEY`).
 
 #### D. Acesso ao Swagger UI

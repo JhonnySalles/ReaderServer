@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Layers, Library, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
-import { authStorage, authenticateAutomatically } from '../../services/api';
+import { Home, BookOpen, Layers, Library, ChevronLeft, ChevronRight, LogIn, LogOut, User } from 'lucide-react';
+import { authStorage, logout, subscribeAuth } from '../../services/api';
 import './Sidebar.css';
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  onOpenLogin?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
-  const handleReauth = async () => {
-    authStorage.clearAuth();
-    await authenticateAutomatically();
-    window.location.reload();
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenLogin }) => {
+  const [currentUser, setCurrentUser] = useState<string>(authStorage.getUsername());
+  const [isAuth, setIsAuth] = useState<boolean>(authStorage.isAuthenticated());
+
+  useEffect(() => {
+    const unsubscribe = subscribeAuth((event, user) => {
+      if (event === 'login') {
+        setIsAuth(true);
+        setCurrentUser(user || authStorage.getUsername());
+      } else if (event === 'logout' || event === 'unauthorized') {
+        setIsAuth(false);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    if (onOpenLogin) {
+      onOpenLogin();
+    } else {
+      window.location.reload();
+    }
   };
 
   return (
@@ -82,32 +101,65 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       <div className="sidebar-footer">
         {isOpen ? (
           <>
-            <button 
-              onClick={handleReauth} 
-              className="btn-sync-action" 
-              title="Sincronizar / Renovar Acesso"
-              id="btn-reauth"
-            >
-              <RefreshCw size={16} />
-              <span>Sincronizar Acesso</span>
-            </button>
+            <div className="user-badge-container">
+              <div className="user-badge-icon">
+                <User size={14} />
+              </div>
+              <div className="user-badge-info">
+                <span className="user-badge-label">{isAuth ? 'Conectado como' : 'Sessão Anônima'}</span>
+                <span className="user-badge-name" title={currentUser}>{currentUser}</span>
+              </div>
+            </div>
+
+            {isAuth ? (
+              <button 
+                onClick={handleLogout} 
+                className="btn-sync-action btn-logout-action" 
+                title="Encerrar sessão em memória"
+                id="btn-logout"
+              >
+                <LogOut size={16} />
+                <span>Sair / Trocar Usuário</span>
+              </button>
+            ) : (
+              <button 
+                onClick={onOpenLogin} 
+                className="btn-sync-action btn-login-action" 
+                title="Entrar com usuário e senha"
+                id="btn-login-trigger"
+              >
+                <LogIn size={16} />
+                <span>Fazer Login</span>
+              </button>
+            )}
+
             <div className="server-status">
-              <span className="status-dot"></span>
-              <span className="status-text">API Online :8083</span>
+              <span className={`status-dot ${isAuth ? 'status-online' : 'status-offline'}`}></span>
+              <span className="status-text">{isAuth ? 'Sessão Ativa' : 'Não Autenticado'}</span>
             </div>
           </>
         ) : (
-          <button 
-            onClick={handleReauth} 
-            className="btn-sync-collapsed" 
-            title="Sincronizar Acesso"
-            id="btn-reauth-collapsed"
-          >
-            <RefreshCw size={18} />
-          </button>
+          isAuth ? (
+            <button 
+              onClick={handleLogout} 
+              className="btn-sync-collapsed btn-logout-action" 
+              title={`Sair (${currentUser})`}
+              id="btn-logout-collapsed"
+            >
+              <LogOut size={18} />
+            </button>
+          ) : (
+            <button 
+              onClick={onOpenLogin} 
+              className="btn-sync-collapsed btn-login-action" 
+              title="Fazer Login"
+              id="btn-login-collapsed"
+            >
+              <LogIn size={18} />
+            </button>
+          )
         )}
       </div>
     </aside>
   );
 };
-

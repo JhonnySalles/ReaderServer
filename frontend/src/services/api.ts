@@ -8,23 +8,46 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export type AuthEventType = 'login' | 'logout' | 'unauthorized';
+export type AuthEventListener = (event: AuthEventType, username?: string) => void;
+
 const TOKEN_KEY = 'reader_access_token';
 const REFRESH_TOKEN_KEY = 'reader_refresh_token';
 const USERNAME_KEY = 'reader_username';
 
-// Helper para obter variáveis dinamicamente no Docker ou via .env em desenvolvimento
+// Listeners para sincronizar estado de autenticação reativamente
+const authListeners = new Set<AuthEventListener>();
+
+export const subscribeAuth = (listener: AuthEventListener): (() => void) => {
+  authListeners.add(listener);
+  return () => {
+    authListeners.delete(listener);
+  };
+};
+
+export const notifyAuth = (event: AuthEventType, username?: string): void => {
+  authListeners.forEach(listener => {
+    try {
+      listener(event, username);
+    } catch (e) {
+      console.error('Erro no listener de autenticação:', e);
+    }
+  });
+};
+
+// Helper para obter variáveis dinamicamente no Docker, Alwaysdata ou via .env em desenvolvimento
 declare global {
   interface Window {
     __RUNTIME_CONFIG__?: {
+      VITE_BASE_PATH?: string;
       VITE_API_BASE_URL?: string;
       VITE_API_USERNAME?: string;
-      VITE_API_PASSWORD?: string;
       VITE_API_KEY?: string;
     };
   }
 }
 
-const getEnv = (key: 'VITE_API_BASE_URL' | 'VITE_API_USERNAME' | 'VITE_API_PASSWORD' | 'VITE_API_KEY', fallback: string): string => {
+const getEnv = (key: 'VITE_API_BASE_URL' | 'VITE_API_USERNAME' | 'VITE_API_KEY', fallback: string): string => {
   if (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__ && window.__RUNTIME_CONFIG__[key]) {
     return window.__RUNTIME_CONFIG__[key]!;
   }
@@ -50,8 +73,59 @@ export const authStorage = {
   }
 };
 
-export const getBaseUrl = () => getEnv('VITE_API_BASE_URL', 'http://localhost:8083');
+export const getBaseUrl = (): string => {
+  const configuredUrl = getEnv('VITE_API_BASE_URL', '');
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return `${window.location.origin}/readerserver/api`;
+  }
+  return 'http://localhost:8083';
+};
+
 export const getApiKey = () => getEnv('VITE_API_KEY', '');
+
+export async function login(username: string, password: string): Promise<AuthTokens> {
+  const apiKey = getApiKey();
+  const baseUrl = getBaseUrl();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+  if (apiKey) {
+    headers['X-API-KEY'] = apiKey;
+  }
+
+  const response = await axios.post<AuthTokens>(`${baseUrl}/auth/signin`, {
+    username: username.trim(),
+    password
+  }, {
+    headers
+  });
+
+  if (response.data && response.data.accessToken) {
+    authStorage.saveAuth(response.data);
+    notifyAuth('login', response.data.username);
+    return response.data;
+  }
+
+  throw new Error('Falha no login: token de acesso não retornado pela API.');
+}
+
+export function logout(): void {
+  authStorage.clearAuth();
+  notifyAuth('logout');
+}
+
+/**
+ * Mantido para retrocompatibilidade; dispara o fluxo de login interativo.
+ */
+export async function authenticateAutomatically(): Promise<string | null> {
+  notifyAuth('unauthorized');
+  return null;
+}
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -61,66 +135,14 @@ const api = axios.create({
   }
 });
 
-// Promessa singleton para evitar chamadas de login concorrentes
-let loginPromise: Promise<string | null> | null = null;
-
-export async function authenticateAutomatically(): Promise<string | null> {
-  if (loginPromise) {
-    return loginPromise;
-  }
-
-  loginPromise = (async () => {
-    try {
-      const username = getEnv('VITE_API_USERNAME', 'admin');
-      const password = getEnv('VITE_API_PASSWORD', 'admin');
-      const apiKey = getApiKey();
-      const baseUrl = getBaseUrl();
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      };
-      if (apiKey) {
-        headers['X-API-KEY'] = apiKey;
-      }
-
-      const response = await axios.post<AuthTokens>(`${baseUrl}/auth/signin`, {
-        username,
-        password
-      }, {
-        headers
-      });
-
-      if (response.data && response.data.accessToken) {
-        authStorage.saveAuth(response.data);
-        return response.data.accessToken;
-      }
-      return null;
-    } catch (err) {
-      console.error('Falha na autenticação automática do ReaderServer:', err);
-      return null;
-    } finally {
-      loginPromise = null;
-    }
-  })();
-
-  return loginPromise;
-}
-
-// Request Interceptor: Garante que o token está presente antes da requisição
-api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+// Request Interceptor: adiciona X-API-KEY e Authorization Bearer em memória
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const apiKey = getApiKey();
   if (apiKey && config.headers) {
     config.headers['X-API-KEY'] = apiKey;
   }
 
-  let token = authStorage.getToken();
-
-  // Se não temos token em memória e a rota for privada (/api), autentica antes de disparar
-  if (!token && config.url && !config.url.startsWith('/auth') && !config.url.startsWith('/health')) {
-    token = await authenticateAutomatically();
-  }
-
+  const token = authStorage.getToken();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -130,23 +152,14 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   return Promise.reject(error);
 });
 
-// Response Interceptor: Se receber 401 ou 403, tenta renovar o token automaticamente e reprocessar
+// Response Interceptor: se receber 401 ou 403, limpa a sessão e notifica a interface para abrir o modal de login
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
-
-    if (error.response && (error.response.status === 401 || error.response.status === 403) && originalRequest && !originalRequest._retry) {
-      originalRequest._retry = true;
+  (error: AxiosError) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       authStorage.clearAuth();
-
-      const newToken = await authenticateAutomatically();
-      if (newToken && originalRequest.headers) {
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
-      }
+      notifyAuth('unauthorized');
     }
-
     return Promise.reject(error);
   }
 );

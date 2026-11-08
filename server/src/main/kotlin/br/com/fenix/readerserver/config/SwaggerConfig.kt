@@ -33,7 +33,7 @@ class SwaggerConfig {
                         API REST para biblioteca de mangás, livros/ePubs, ComicInfo e metadados OPF.
                         
                         ### 🔐 Requisitos de Segurança:
-                        - **API Key (`X-API-KEY`)**: Obrigatória em todas as requisições de serviço (incluindo autenticação em `/auth/signin` e endpoints de negócio `/api/**`). A chave deve estar cadastrada e ativa (`ativo = true`) na tabela `seguranca`.
+                        - **API Key (`X-API-KEY`)**: Obrigatória em todas as requisições de serviço (incluindo autenticação em `/auth/signin` e endpoints de negócio `/api/**`). A chave deve corresponder à chave de segurança configurada no servidor (`security.apikey` / `SECURITY_API_KEY`).
                         - **Token JWT (`Bearer Token`)**: Obrigatório para endpoints protegidos de negócio (`/api/**`), obtido através do login em `/auth/signin`.
                         
                         💡 *Para testar requisições pelo Swagger UI, utilize o botão **Authorize** informando a `X-API-KEY` no campo **ApiKeyAuth** e o Token JWT no campo **BearerAuth**.*
@@ -50,7 +50,7 @@ class SwaggerConfig {
                             .name("X-API-KEY")
                             .type(SecurityScheme.Type.APIKEY)
                             .`in`(SecurityScheme.In.HEADER)
-                            .description("Chave de segurança da API cadastrada na tabela 'seguranca'. Cabeçalho HTTP: 'X-API-KEY'. Obrigatória em todas as chamadas.")
+                            .description("Chave de segurança da API configurada no servidor. Cabeçalho HTTP: 'X-API-KEY'. Obrigatória em todas as chamadas.")
                     )
                     .addSecuritySchemes(
                         BEARER_AUTH,

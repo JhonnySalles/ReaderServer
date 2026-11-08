@@ -5,6 +5,7 @@ security:
     token:
       secret-key: 53cr37
       expire-length: 86400000 # 24h (24 * 60 * 60 * 1000)
+  apikey: ${SECURITY_API_KEY:53cr37-api-key}
 spring:
   application:
     name: ReaderServer

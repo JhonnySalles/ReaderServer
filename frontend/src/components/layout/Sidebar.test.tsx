@@ -1,10 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { authStorage } from '../../services/api';
 
 describe('Sidebar Component', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
   it('deve renderizar os links de navegação e o logo no modo aberto', () => {
     render(
       <MemoryRouter>
@@ -16,7 +21,25 @@ describe('Sidebar Component', () => {
     expect(screen.getByText('Início')).toBeInTheDocument();
     expect(screen.getByText('Livros & Epubs')).toBeInTheDocument();
     expect(screen.getByText('Mangás & Comics')).toBeInTheDocument();
-    expect(screen.getByText('Sincronizar Acesso')).toBeInTheDocument();
+    expect(screen.getByText('Fazer Login')).toBeInTheDocument();
+  });
+
+  it('deve exibir botão de Sair quando usuário estiver autenticado', () => {
+    authStorage.saveAuth({
+      username: 'admin',
+      authenticated: true,
+      accessToken: 'fake-token',
+      refreshToken: 'fake-refresh'
+    });
+
+    render(
+      <MemoryRouter>
+        <Sidebar isOpen={true} onToggle={() => {}} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Sair / Trocar Usuário')).toBeInTheDocument();
+    expect(screen.getByText('Sessão Ativa')).toBeInTheDocument();
   });
 
   it('deve chamar onToggle ao clicar no botão de recolher', async () => {

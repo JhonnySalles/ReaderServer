@@ -2,12 +2,13 @@
 cors:
   originPatterns: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080,http://localhost:5173,http://localhost:5174,http://localhost:5179}
 
-# Segurança JWT
+# Segurança JWT e API Key
 security:
   jwt:
     token:
       secret-key: ${JWT_SECRET_KEY:53cr37}
       expire-length: ${JWT_EXPIRE_LENGTH:86400000} # 24h
+  apikey: ${SECURITY_API_KEY:53cr37-api-key}
 
 spring:
   application:
